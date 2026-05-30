@@ -598,13 +598,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1763105477984587934}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.6386871, y: -0, z: 0.000000029453076, w: 0.7694666}
-  m_LocalPosition: {x: 1.8999993, y: 16.06, z: -3.6499982}
+  m_LocalRotation: {x: 0.17718846, y: -0.000000022351736, z: 0.000000016880218, w: 0.98417693}
+  m_LocalPosition: {x: 0.12000048, y: 2.79, z: -4.2500033}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 5133337589519397662}
-  m_LocalEulerAnglesHint: {x: 79.388, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 20.412, y: 0, z: 0}
 --- !u!20 &7307513882035108091
 Camera:
   m_ObjectHideFlags: 0
@@ -1052,7 +1052,8 @@ GameObject:
   - component: {fileID: 5874336763327599101}
   - component: {fileID: 577091804102820269}
   - component: {fileID: 5592676134670674471}
-  m_Layer: 0
+  - component: {fileID: 7979956946788762377}
+  m_Layer: 8
   m_Name: Car 1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1151,8 +1152,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   damagePercent: 0
-  damageMultiplier: 0
-  minImpactForce: 1000
+  damageMultiplier: 0.1
+  minImpactForce: 500
   collisionCount: 0
   breakableParts:
   - part: {fileID: 7124044251204007366}
@@ -1167,6 +1168,21 @@ MonoBehaviour:
   - part: {fileID: 1725755839211354253}
     breakAtDamage: 80
     broken: 0
+--- !u!114 &7979956946788762377
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5792132219090289696}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 05219e814131a0442a5a0f7bcccb2aee, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  damageScale: 0.003
+  minImpulse: 500
+  ignoreDebris: 1
 --- !u!1 &6560172808474961447
 GameObject:
   m_ObjectHideFlags: 0

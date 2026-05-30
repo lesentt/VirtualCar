@@ -2,8 +2,9 @@ using UnityEngine;
 
 /// <summary>
 /// 车辆损伤与破碎系统。
-/// 功能：碰撞累积损伤、部件脱落、100% 时报废无法移动。
+/// 功能：接收 VehicleCollisionHandler 计算的损伤、部件脱落、100% 时报废无法移动。
 /// </summary>
+[RequireComponent(typeof(VehicleCollisionHandler))]
 public class CarDamageSystem : MonoBehaviour
 {
     [Header("—— 损伤参数 ——")]
@@ -16,9 +17,9 @@ public class CarDamageSystem : MonoBehaviour
     [Tooltip("碰撞力度转损伤的系数。越大，同样碰撞下损伤增加越快")]
     public float damageMultiplier = 2f;
 
-    [LabelText("最低碰撞速度")]
-    [Tooltip("最低有效碰撞速度。低于此值的轻碰不计损伤")]
-    public float minImpactForce = 3f;
+    [LabelText("最低有效冲量")]
+    [Tooltip("低于此冲量的碰撞不计损伤（由 VehicleCollisionHandler 预过滤）")]
+    public float minImpactForce = 500f;
 
     [LabelText("碰撞次数")]
     [Tooltip("累计碰撞次数（运行时自动更新）")]
@@ -31,7 +32,7 @@ public class CarDamageSystem : MonoBehaviour
 
     private CarController carController;
     private bool isTotaled;
-    private float lastImpactForce;
+    private float lastImpactForce; // 最近一次有效碰撞冲量
 
     [System.Serializable]
     public class BreakablePart
@@ -52,19 +53,22 @@ public class CarDamageSystem : MonoBehaviour
     void Awake()
     {
         carController = GetComponent<CarController>();
+
+        if (GetComponent<VehicleCollisionHandler>() == null)
+            gameObject.AddComponent<VehicleCollisionHandler>();
+
+        gameObject.layer = CollisionTypes.GetLayerIndex(CollisionTypes.LayerVehicle);
     }
 
-    void OnCollisionEnter(Collision collision)
+    public void ReceiveImpact(float damageAmount, float impulse)
     {
         if (isTotaled) return;
-
-        float impactForce = collision.relativeVelocity.magnitude;
-        if (impactForce < minImpactForce) return;
+        if (impulse < minImpactForce) return;
 
         collisionCount++;
-        lastImpactForce = impactForce;
-        float damageAmount = impactForce * damageMultiplier + collisionCount * 1.5f;
-        ApplyDamage(damageAmount);
+        lastImpactForce = impulse;
+        float scaledDamage = damageAmount * damageMultiplier + collisionCount * 1.5f;
+        ApplyDamage(scaledDamage);
     }
 
     void ApplyDamage(float amount)

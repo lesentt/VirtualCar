@@ -1089,7 +1089,8 @@ GameObject:
   - component: {fileID: 5912375181551468957}
   - component: {fileID: 5272410668674434250}
   - component: {fileID: 3289833237008225062}
-  m_Layer: 0
+  - component: {fileID: 6579317904570861284}
+  m_Layer: 8
   m_Name: Police 1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1206,6 +1207,21 @@ MonoBehaviour:
   - part: {fileID: 7090058275908962969}
     breakAtDamage: 20.4
     broken: 0
+--- !u!114 &6579317904570861284
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6983235169002897834}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 05219e814131a0442a5a0f7bcccb2aee, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  damageScale: 0.003
+  minImpulse: 500
+  ignoreDebris: 1
 --- !u!1 &7080704021373016889
 GameObject:
   m_ObjectHideFlags: 0

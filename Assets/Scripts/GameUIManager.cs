@@ -177,9 +177,16 @@ public class GameUIManager : MonoBehaviour
             speedText.text = $"车速：{car.GetSpeed():F1} km/h";
 
         if (damageText != null)
+        {
+            string impulseText = "";
+            VehicleCollisionHandler handler = car.GetComponent<VehicleCollisionHandler>();
+            if (handler != null && handler.GetLastImpulse() > 0f)
+                impulseText = $" | 冲击：{handler.GetLastImpulse():F0}";
+
             damageText.text = damage != null
-                ? $"损伤：{damage.GetDamagePercent():F1} %"
+                ? $"损伤：{damage.GetDamagePercent():F1} %{impulseText}"
                 : "损伤：0.0 %";
+        }
 
         if (driveForceText != null)
             driveForceText.text = $"驱动力：{car.GetCurrentDriveForce():F0} N·m";
