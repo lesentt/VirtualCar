@@ -49,8 +49,8 @@ public class CarController : MonoBehaviour
     public float motorTorque = 1500f;
 
     [LabelText("最大转向角")]
-    [Tooltip("前轮最大转向角度（度）")]
-    public float maxSteerAngle = 30f;
+    [Tooltip("前轮最大转向角（度）。已内置随车速限制：低速防原地转圈、高速减舵。仍太快可调到 18~20")]
+    public float maxSteerAngle = 18f;
 
     [LabelText("刹车力矩")]
     [Tooltip("按住 Space 时的刹车力矩")]
@@ -90,6 +90,7 @@ public class CarController : MonoBehaviour
     private float normalForce;
     private float accelerationG;
     private float throttleInput;
+    private float steerInput;
     private bool isDisabled;
     private bool isBraking;
     private bool isHandbraking;
@@ -100,6 +101,7 @@ public class CarController : MonoBehaviour
     {
         rb = GetComponent<Rigidbody>();
         rb.centerOfMass = new Vector3(0, -0.5f, 0);
+        rb.maxAngularVelocity = 2.5f;
         lastVelocity = rb.velocity;
         ApplyGripToWheels();
 
@@ -115,55 +117,43 @@ public class CarController : MonoBehaviour
     {
         speedKmh = GetHorizontalSpeedKmh();
 
-        if (!isPlayerControlled)
-        {
-            wheelRL.motorTorque = wheelRR.motorTorque = 0f;
-            SetBrakeAll(0f);
-            return;
-        }
+        if (!isPlayerControlled) return;
 
         if (isDisabled)
         {
+            throttleInput = 0f;
+            steerInput = 0f;
             isBraking = false;
             isHandbraking = true;
-            throttleInput = 0f;
-            currentDriveTorque = 0f;
-            wheelRL.motorTorque = wheelRR.motorTorque = 0f;
-            wheelFL.steerAngle = wheelFR.steerAngle = 0f;
-            SetBrakeAll(handbrakeTorque);
             return;
         }
 
         throttleInput = Input.GetAxis("Vertical");
-        float steerInput = Input.GetAxis("Horizontal");
+        steerInput = Input.GetAxis("Horizontal");
         isBraking = Input.GetKey(KeyCode.Space);
         isHandbraking = Input.GetKey(KeyCode.LeftShift);
-
-        wheelFL.steerAngle = maxSteerAngle * steerInput;
-        wheelFR.steerAngle = maxSteerAngle * steerInput;
-
-        float effectiveTorque = motorTorque * driveMultiplier;
-        currentDriveTorque = effectiveTorque * throttleInput;
-
-        if (isHandbraking)
-        {
-            SetBrakeAll(handbrakeTorque);
-            wheelRL.motorTorque = wheelRR.motorTorque = 0f;
-        }
-        else if (isBraking)
-        {
-            SetBrakeAll(brakeTorque);
-            wheelRL.motorTorque = wheelRR.motorTorque = currentDriveTorque * 0.3f;
-        }
-        else
-        {
-            SetBrakeAll(0f);
-            wheelRL.motorTorque = wheelRR.motorTorque = currentDriveTorque;
-        }
     }
 
     void FixedUpdate()
     {
+        if (!isPlayerControlled)
+        {
+            SetMotorAll(0f);
+            SetBrakeAll(0f);
+            wheelFL.steerAngle = wheelFR.steerAngle = 0f;
+        }
+        else if (isDisabled)
+        {
+            currentDriveTorque = 0f;
+            SetMotorAll(0f);
+            wheelFL.steerAngle = wheelFR.steerAngle = 0f;
+            SetBrakeAll(handbrakeTorque);
+        }
+        else
+        {
+            ApplyWheelDrive();
+        }
+
         UpdateWheelMesh(wheelFL, meshFL);
         UpdateWheelMesh(wheelFR, meshFR);
         UpdateWheelMesh(wheelRL, meshRL);
@@ -175,6 +165,48 @@ public class CarController : MonoBehaviour
         Vector3 acceleration = (rb.velocity - lastVelocity) / Time.fixedDeltaTime;
         accelerationG = acceleration.magnitude / 9.81f;
         lastVelocity = rb.velocity;
+    }
+
+    void ApplyWheelDrive()
+    {
+        float forwardKmh = Vector3.Dot(GetHorizontalVelocity(), transform.forward) * 3.6f;
+        float speed = GetHorizontalSpeedKmh();
+
+        // 按住 W 起步时：车头速度不够前不转向，避免 W+D 原地转圈
+        float steerScale = 1f;
+        if (throttleInput > 0.1f && forwardKmh < 12f)
+            steerScale = 0f;
+        else if (speed > 50f)
+            steerScale = Mathf.Lerp(1f, 0.45f, Mathf.Clamp01((speed - 50f) / 50f));
+
+        float steerAngle = maxSteerAngle * steerInput * steerScale;
+        wheelFL.steerAngle = steerAngle;
+        wheelFR.steerAngle = steerAngle;
+
+        currentDriveTorque = motorTorque * driveMultiplier * throttleInput;
+
+        // 前轮驱动：拉着走弯，比后轮推+转向稳得多
+        if (isHandbraking)
+        {
+            SetBrakeAll(handbrakeTorque);
+            SetMotorAll(0f);
+        }
+        else if (isBraking)
+        {
+            SetBrakeAll(brakeTorque);
+            SetMotorAll(currentDriveTorque * 0.3f);
+        }
+        else
+        {
+            SetBrakeAll(0f);
+            SetMotorAll(currentDriveTorque);
+        }
+    }
+
+    void SetMotorAll(float torque)
+    {
+        wheelFL.motorTorque = wheelFR.motorTorque = torque;
+        wheelRL.motorTorque = wheelRR.motorTorque = 0f;
     }
 
     void UpdateGroundContact()

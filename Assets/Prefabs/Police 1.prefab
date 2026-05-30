@@ -1089,7 +1089,6 @@ GameObject:
   - component: {fileID: 5912375181551468957}
   - component: {fileID: 5272410668674434250}
   - component: {fileID: 3289833237008225062}
-  - component: {fileID: 392380131501666390}
   m_Layer: 0
   m_Name: Police 1
   m_TagString: Untagged
@@ -1130,7 +1129,7 @@ Rigidbody:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6983235169002897834}
   serializedVersion: 4
-  m_Mass: 3000
+  m_Mass: 1000
   m_Drag: 0
   m_AngularDrag: 0.05
   m_CenterOfMass: {x: 0, y: 0, z: 0}
@@ -1171,12 +1170,13 @@ MonoBehaviour:
   meshRL: {fileID: 0}
   meshRR: {fileID: 0}
   motorTorque: 1500
-  maxSteerAngle: 60
-  brakeTorque: 3000
-  handbrakeTorque: 10000
-  frictionStiffness: 1
+  maxSteerAngle: 30
+  brakeTorque: 10000
+  handbrakeTorque: 30000
+  gripCoefficient: 1
   rollingResistanceCoeff: 0.02
   airDragCoefficient: 0.4
+  bodyPhysicMaterial: {fileID: 0}
 --- !u!114 &3289833237008225062
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1206,21 +1206,6 @@ MonoBehaviour:
   - part: {fileID: 7090058275908962969}
     breakAtDamage: 20.4
     broken: 0
---- !u!114 &392380131501666390
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6983235169002897834}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7ff2a5e2d56c6cc4e95df5c2890a37a9, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  restitution: 0.5
-  minRelativeSpeed: 1
-  staticDefaultMass: 20000
 --- !u!1 &7080704021373016889
 GameObject:
   m_ObjectHideFlags: 0
