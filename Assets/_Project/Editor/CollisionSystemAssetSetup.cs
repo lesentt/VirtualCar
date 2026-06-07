@@ -35,7 +35,8 @@ public static class CollisionSystemAssetSetup
         foreach (string guid in guids)
         {
             string path = AssetDatabase.GUIDToAssetPath(guid);
-            if (!path.ToLowerInvariant().Contains("car") && !path.ToLowerInvariant().Contains("police"))
+            string lower = path.ToLowerInvariant();
+            if (!lower.Contains("car") && !lower.Contains("police") && !lower.Contains("taxi"))
                 continue;
 
             ModelImporter importer = AssetImporter.GetAtPath(path) as ModelImporter;

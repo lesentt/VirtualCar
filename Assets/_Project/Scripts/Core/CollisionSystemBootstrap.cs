@@ -8,8 +8,39 @@ public static class CollisionSystemBootstrap
     public static void Initialize()
     {
         EnsureCollisionSystemRoot();
+        EnsureDriveableVehicleModels();
         VehicleDeformationSetup.SetupAllVehicles();
         EnsureEnvironmentReporters();
+    }
+
+    static void EnsureDriveableVehicleModels()
+    {
+        foreach (GameObject root in UnityEngine.SceneManagement.SceneManager.GetActiveScene().GetRootGameObjects())
+            EnsureDriveableVehicleRecursive(root);
+    }
+
+    static bool IsTaxiVehicleRoot(GameObject go)
+    {
+        if (go == null)
+            return false;
+
+        if (go.GetComponentInParent<CarController>() != null && go.GetComponent<CarController>() == null)
+            return false;
+
+        string lower = go.name.ToLowerInvariant();
+        return lower.Contains("taxi_stylized") || (lower.Contains("taxi") && go.GetComponent<CarController>() != null);
+    }
+
+    static void EnsureDriveableVehicleRecursive(GameObject go)
+    {
+        if (go == null)
+            return;
+
+        if (IsTaxiVehicleRoot(go))
+            DriveableVehicleBuilder.EnsureTaxi(go);
+
+        foreach (Transform child in go.transform)
+            EnsureDriveableVehicleRecursive(child.gameObject);
     }
 
     public static void EnsureCollisionSystemRoot()

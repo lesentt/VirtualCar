@@ -2,7 +2,7 @@ using UnityEngine;
 
 /// <summary>
 /// 车辆摄像机切换脚本。
-/// 功能：按 1/2/3 切换车辆时，同步启用对应车载摄像机。
+/// 功能：按数字键切换车辆时，同步启用对应车载摄像机。
 /// </summary>
 public class VehicleCameraController : MonoBehaviour
 {
@@ -20,7 +20,7 @@ public class VehicleCameraController : MonoBehaviour
 
     [Header("—— 车辆摄像机列表 ——")]
     [LabelText("摄像机列表")]
-    [Tooltip("顺序必须与 GameUIManager 的车辆列表一致：0=车辆1, 1=车辆2, 2=车辆3")]
+    [Tooltip("顺序必须与 GameUIManager 的车辆列表一致")]
     public CameraEntry[] cameras;
 
     [Header("—— 可选设置 ——")]
@@ -29,6 +29,12 @@ public class VehicleCameraController : MonoBehaviour
     public Camera sceneMainCamera;
 
     private int activeIndex = -1;
+
+    public void SyncWithControllers(CarController[] controllers)
+    {
+        cameras = VehicleSwitchRegistry.BuildCameraEntries(controllers);
+        activeIndex = -1;
+    }
 
     public void SwitchToVehicle(int index)
     {

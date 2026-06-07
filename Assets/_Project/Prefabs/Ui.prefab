@@ -1183,6 +1183,9 @@ MonoBehaviour:
     controller: {fileID: 0}
   - displayName: police
     controller: {fileID: 0}
+  - displayName: taxi
+    controller: {fileID: 0}
+  autoDiscoverVehicles: 1
   cameraController: {fileID: 0}
 --- !u!1 &7432825729729967150
 GameObject:

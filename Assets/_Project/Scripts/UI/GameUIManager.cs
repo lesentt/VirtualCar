@@ -18,6 +18,10 @@ public class GameUIManager : MonoBehaviour
     [Header("—— 车辆列表 ——")]
     public VehicleEntry[] vehicles;
 
+    [LabelText("自动发现场景车辆")]
+    [Tooltip("启动时按 Car 1 → Police 1 → Taxi 顺序收集场景中的 CarController")]
+    public bool autoDiscoverVehicles = true;
+
     [Header("—— 摄像机 ——")]
     public VehicleCameraController cameraController;
 
@@ -45,6 +49,8 @@ public class GameUIManager : MonoBehaviour
     void Start()
     {
         settingsManager = GetComponent<GameSettingsManager>();
+        if (autoDiscoverVehicles)
+            RefreshVehicleRegistry();
         BuildHud();
         if (vehicles == null || vehicles.Length == 0) return;
         SelectVehicle(0);
@@ -57,8 +63,45 @@ public class GameUIManager : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.Alpha1)) SelectVehicle(0);
         if (Input.GetKeyDown(KeyCode.Alpha2) && vehicles.Length > 1) SelectVehicle(1);
         if (Input.GetKeyDown(KeyCode.Alpha3) && vehicles.Length > 2) SelectVehicle(2);
+        if (Input.GetKeyDown(KeyCode.Alpha4) && vehicles.Length > 3) SelectVehicle(3);
 
         RefreshDisplay();
+    }
+
+    public void RefreshVehicleRegistry()
+    {
+        if (cameraController == null)
+            cameraController = FindObjectOfType<VehicleCameraController>();
+
+        VehicleEntry[] previous = vehicles;
+        CarController[] controllers = VehicleSwitchRegistry.CollectOrderedControllers();
+        vehicles = VehicleSwitchRegistry.BuildVehicleEntries(controllers);
+        PreserveDisplayNames(previous);
+
+        if (cameraController != null)
+            cameraController.SyncWithControllers(controllers);
+    }
+
+    void PreserveDisplayNames(VehicleEntry[] previous)
+    {
+        if (previous == null || vehicles == null)
+            return;
+
+        for (int i = 0; i < vehicles.Length; i++)
+        {
+            CarController controller = vehicles[i].controller;
+            if (controller == null)
+                continue;
+
+            for (int j = 0; j < previous.Length; j++)
+            {
+                if (previous[j].controller != controller)
+                    continue;
+                if (!string.IsNullOrEmpty(previous[j].displayName))
+                    vehicles[i].displayName = previous[j].displayName;
+                break;
+            }
+        }
     }
 
     void EnsureCanvasScaler()
@@ -121,6 +164,7 @@ public class GameUIManager : MonoBehaviour
     public void SelectVehicle1() => SelectVehicle(0);
     public void SelectVehicle2() => SelectVehicle(1);
     public void SelectVehicle3() => SelectVehicle(2);
+    public void SelectVehicle4() => SelectVehicle(3);
 
     public string GetVehicleDisplayName(int index)
     {

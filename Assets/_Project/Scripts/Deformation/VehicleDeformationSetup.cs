@@ -27,6 +27,7 @@ public static class VehicleDeformationSetup
         new PartDef { objectName = "PDoor_FR", partType = VehiclePartType.DoorFR },
         new PartDef { objectName = "PDoor_BL", partType = VehiclePartType.DoorRL },
         new PartDef { objectName = "PDoor_BR", partType = VehiclePartType.DoorRR },
+        new PartDef { objectName = "Taxi_S", partType = VehiclePartType.FrontBumper },
     };
 
     public static void SetupAllVehicles()
@@ -98,6 +99,8 @@ public static class VehicleDeformationSetup
         string lower = root.name.ToLowerInvariant();
         if (lower.Contains("police"))
             state.damageSensitivity = 0.65f;
+        else if (lower.Contains("taxi"))
+            state.damageSensitivity = 0.32f;
         else if (lower.Contains("car"))
             state.damageSensitivity = 0.28f;
     }

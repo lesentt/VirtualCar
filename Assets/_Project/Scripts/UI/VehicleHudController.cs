@@ -50,9 +50,11 @@ public class VehicleHudController : MonoBehaviour
     Text gripText;
     Text massText;
 
-    readonly GameObject[] tabRoots = new GameObject[3];
-    readonly Image[] tabImages = new Image[3];
-    readonly Text[] tabLabels = new Text[3];
+    const int MaxVehicleTabs = 4;
+
+    readonly GameObject[] tabRoots = new GameObject[MaxVehicleTabs];
+    readonly Image[] tabImages = new Image[MaxVehicleTabs];
+    readonly Text[] tabLabels = new Text[MaxVehicleTabs];
 
     public GameObject HudRoot => hudRoot;
 
@@ -177,9 +179,9 @@ public class VehicleHudController : MonoBehaviour
         GameObject tabs = new GameObject("Tabs", typeof(RectTransform), typeof(HorizontalLayoutGroup), typeof(LayoutElement));
         tabs.transform.SetParent(row.transform, false);
         ConfigureRow(tabs.GetComponent<HorizontalLayoutGroup>(), 4f, TextAnchor.MiddleRight);
-        SetFixed(tabs, 84f, 28f);
+        SetFixed(tabs, 112f, 28f);
 
-        for (int i = 0; i < 3; i++)
+        for (int i = 0; i < MaxVehicleTabs; i++)
         {
             GameObject tab = CreateFixedImage(tabs.transform, $"Tab_{i + 1}", TabNormal, 24f, 22f);
             tabLabels[i] = CreateRowText(tab.transform, "Label", (i + 1).ToString(), 11,
