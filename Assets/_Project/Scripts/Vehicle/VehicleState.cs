@@ -84,5 +84,6 @@ public class VehicleState : MonoBehaviour
         carController?.SetDisabled(false);
         carController?.SetDriveMultiplier(1f);
         deformationController?.ResetDeformation();
+        FindObjectOfType<CollisionVFXManager>()?.ClearVehicleEffects(this);
     }
 }

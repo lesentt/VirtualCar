@@ -31,15 +31,15 @@ MonoBehaviour:
     medium: {fileID: 8300000, guid: 382dc972dcd78d044b35c73aedb124e6, type: 3}
     heavy: {fileID: 8300000, guid: 8575070ee4b775941b9ad7ff695b7411, type: 3}
     volumeScale: 0.9
-    pitchMin: 0.95
-    pitchMax: 1.15
+    pitchMin: 0.9
+    pitchMax: 1.1
   metalGuardrail:
     light: {fileID: 8300000, guid: f5027c9df03d47c4589bdfbd8fd9a93a, type: 3}
     medium: {fileID: 8300000, guid: f71f071c25d2ccc44b3348ac31a2f190, type: 3}
     heavy: {fileID: 8300000, guid: 1223371366a778942bff703c1697e62d, type: 3}
     volumeScale: 1
     pitchMin: 0.9
-    pitchMax: 1.2
+    pitchMax: 1.1
   scrapeLoop: {fileID: 8300000, guid: f5027c9df03d47c4589bdfbd8fd9a93a, type: 3}
   lightImpulseThreshold: 500
   heavyImpulseThreshold: 4000

@@ -1,13 +1,19 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 public class CollisionVFXManager : MonoBehaviour
 {
     [SerializeField] CollisionVFXProfile profile;
 
+    readonly Dictionary<VehicleState, GameObject> vehicleBigFires = new Dictionary<VehicleState, GameObject>();
+
     bool vfxEnabled = true;
 
     void Awake()
     {
+        if (profile == null)
+            profile = CollisionConfigProvider.VfxProfile;
+
         if (profile == null)
             profile = ScriptableObject.CreateInstance<CollisionVFXProfile>();
     }
@@ -29,46 +35,71 @@ public class CollisionVFXManager : MonoBehaviour
         if (!vfxEnabled || profile == null || evt.Impulse < profile.minImpulseForVFX)
             return;
 
-        SpawnProceduralSpark(evt);
+        GameObject vehicleRoot = ResolveVehicleRoot(evt.ObjectA);
+        if (vehicleRoot == null)
+            return;
+
+        if (evt.Impulse >= profile.minImpulseForHeavyVFX)
+            SpawnImpactEffect(profile.firePrefab, evt.ContactPoint, evt.ContactNormal, profile.fireLifetime);
+        else
+            SpawnImpactEffect(profile.smokePrefab, evt.ContactPoint, evt.ContactNormal, profile.smokeLifetime);
+
+        VehicleState state = vehicleRoot.GetComponent<VehicleState>();
+        if (state != null && state.GetDamagePercentApprox() >= profile.bigFireDamagePercent)
+            TryAttachBigFire(state, vehicleRoot);
     }
 
-    void SpawnProceduralSpark(CollisionEventData evt)
+    public void ClearVehicleEffects(VehicleState state)
     {
-        GameObject go = new GameObject("ImpactSpark");
-        go.transform.SetPositionAndRotation(evt.ContactPoint, Quaternion.LookRotation(evt.ContactNormal));
+        if (state == null || !vehicleBigFires.TryGetValue(state, out GameObject fire) || fire == null)
+            return;
 
-        ParticleSystem ps = go.AddComponent<ParticleSystem>();
-        ConfigureSpark(ps, evt.Impulse);
-        ps.Play();
-        Destroy(go, 1.2f);
+        Destroy(fire);
+        vehicleBigFires.Remove(state);
     }
 
-    static void ConfigureSpark(ParticleSystem ps, float impulse)
+    void SpawnImpactEffect(GameObject prefab, Vector3 position, Vector3 normal, float lifetime)
     {
-        ps.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
-        ps.Clear();
+        if (prefab == null)
+            return;
 
-        var main = ps.main;
-        main.duration = 0.4f;
-        main.startLifetime = 0.35f;
-        main.startSpeed = Mathf.Lerp(2f, 8f, impulse / 5000f);
-        main.startSize = 0.1f;
-        main.startColor = new Color(1f, 0.75f, 0.2f);
-        main.loop = false;
-        main.maxParticles = 50;
-        main.playOnAwake = false;
+        Quaternion rotation = normal.sqrMagnitude > 0.0001f
+            ? Quaternion.LookRotation(normal)
+            : Quaternion.identity;
 
-        var emission = ps.emission;
-        emission.enabled = true;
-        emission.rateOverTime = 0f;
-        short count = (short)Mathf.Clamp(Mathf.Lerp(8, 35, impulse / 5000f), 1, 50);
-        emission.SetBursts(new[] { new ParticleSystem.Burst(0f, count) });
+        GameObject instance = Instantiate(prefab, position, rotation);
+        PlayAllParticles(instance);
+        Destroy(instance, Mathf.Max(0.5f, lifetime));
+    }
 
-        var shape = ps.shape;
-        shape.enabled = true;
-        shape.shapeType = ParticleSystemShapeType.Cone;
-        shape.angle = 25f;
-        shape.radius = 0.05f;
+    void TryAttachBigFire(VehicleState state, GameObject vehicleRoot)
+    {
+        if (profile.bigFirePrefab == null || vehicleBigFires.ContainsKey(state))
+            return;
+
+        GameObject instance = Instantiate(profile.bigFirePrefab, vehicleRoot.transform);
+        instance.transform.localPosition = profile.bigFireLocalOffset;
+        instance.transform.localRotation = Quaternion.identity;
+        PlayAllParticles(instance);
+        vehicleBigFires[state] = instance;
+    }
+
+    static GameObject ResolveVehicleRoot(GameObject root)
+    {
+        if (root == null)
+            return null;
+
+        if (root.GetComponent<VehicleState>() != null || root.GetComponentInChildren<CarController>() != null)
+            return root;
+
+        return null;
+    }
+
+    static void PlayAllParticles(GameObject root)
+    {
+        ParticleSystem[] systems = root.GetComponentsInChildren<ParticleSystem>(true);
+        for (int i = 0; i < systems.Length; i++)
+            systems[i].Play(true);
     }
 
     public bool IsEnabled() => vfxEnabled;

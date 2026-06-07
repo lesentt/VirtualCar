@@ -1184,6 +1184,7 @@ GameObject:
   - component: {fileID: 8915562498799640482}
   - component: {fileID: 3672883856329609105}
   - component: {fileID: 9070127997331493709}
+  - component: {fileID: 2646371033909299520}
   m_Layer: 8
   m_Name: Car 1
   m_TagString: Untagged
@@ -1310,6 +1311,26 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   damageSensitivity: 0.28
+--- !u!114 &2646371033909299520
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5792132219090289696}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f3a8c1d2e4b56a7890abcdef12345678, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  car: {fileID: 0}
+  library: {fileID: 0}
+  maxSpeedKmh: 140
+  engineVolume: 0.28
+  startupVolume: 0.35
+  brakeVolume: 0.45
+  stopSpeedKmh: 0.8
+  hornKey: 104
 --- !u!1 &6560172808474961447
 GameObject:
   m_ObjectHideFlags: 0

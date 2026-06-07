@@ -1259,6 +1259,7 @@ GameObject:
   - component: {fileID: 4551694940565163352}
   - component: {fileID: 4864674877021211583}
   - component: {fileID: 2390748863583158940}
+  - component: {fileID: 4338291620597864366}
   m_Layer: 8
   m_Name: Police 1
   m_TagString: Untagged
@@ -1387,6 +1388,26 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   damageSensitivity: 0.65
+--- !u!114 &4338291620597864366
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6983235169002897834}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f3a8c1d2e4b56a7890abcdef12345678, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  car: {fileID: 0}
+  library: {fileID: 0}
+  maxSpeedKmh: 140
+  engineVolume: 0.28
+  startupVolume: 0.35
+  brakeVolume: 0.45
+  stopSpeedKmh: 0.8
+  hornKey: 104
 --- !u!1 &7080704021373016889
 GameObject:
   m_ObjectHideFlags: 0

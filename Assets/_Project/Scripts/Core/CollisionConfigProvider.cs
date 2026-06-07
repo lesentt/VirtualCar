@@ -10,12 +10,14 @@ public static class CollisionConfigProvider
     const string MetalProfilePath = "CollisionConfig/VehicleMetalProfile";
     const string AudioProfilePath = "CollisionConfig/DefaultCollisionAudioProfile";
     const string AudioLibraryPath = "CollisionConfig/ProjectAudioLibrary";
+    const string VfxProfilePath = "CollisionConfig/DefaultCollisionVFXProfile";
 
     static DeformationConfig deformationConfig;
     static CollisionEventChannel eventChannel;
     static CollisionEntityProfile vehicleMetalProfile;
     static CollisionAudioProfile audioProfile;
     static ProjectAudioLibrary projectAudioLibrary;
+    static CollisionVFXProfile vfxProfile;
 
     public static DeformationConfig DeformationConfig =>
         deformationConfig ?? (deformationConfig = Resources.Load<DeformationConfig>(DeformPath));
@@ -31,6 +33,9 @@ public static class CollisionConfigProvider
 
     public static ProjectAudioLibrary ProjectAudioLibrary =>
         projectAudioLibrary ?? (projectAudioLibrary = Resources.Load<ProjectAudioLibrary>(AudioLibraryPath));
+
+    public static CollisionVFXProfile VfxProfile =>
+        vfxProfile ?? (vfxProfile = Resources.Load<CollisionVFXProfile>(VfxProfilePath));
 
     public static DeformationConfig GetDeformationConfig(DeformationConfig overrideConfig = null)
     {

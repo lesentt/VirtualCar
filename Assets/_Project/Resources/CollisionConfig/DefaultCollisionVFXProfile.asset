@@ -12,10 +12,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 75604143797581346b6ce27ee12726c2, type: 3}
   m_Name: DefaultCollisionVFXProfile
   m_EditorClassIdentifier: 
-  sparkMetalPrefab: {fileID: 0}
-  dustConcretePrefab: {fileID: 0}
-  debrisMetalPrefab: {fileID: 0}
-  leafPlantPrefab: {fileID: 0}
+  smokePrefab: {fileID: 4380918445339287248, guid: 4b38b1b3e38ed7e499c047067beb6122, type: 3}
+  firePrefab: {fileID: 1582275357731197809, guid: 5334360cd0cfad84bbf6855beaf10de4, type: 3}
+  bigFirePrefab: {fileID: 2670923554171423535, guid: 56f02590ce7db2347803864c84dd78d3, type: 3}
   minImpulseForVFX: 300
-  minImpulseForHeavyVFX: 2500
-  poolSizePerType: 6
+  minImpulseForHeavyVFX: 15000
+  bigFireDamagePercent: 60
+  smokeLifetime: 4
+  fireLifetime: 5
+  bigFireLocalOffset: {x: 0, y: 1.1, z: 0.3}
