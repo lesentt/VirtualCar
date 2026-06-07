@@ -1,5 +1,4 @@
 using UnityEngine;
-using UnityEngine.UI;
 
 /// <summary>
 /// 游戏 UI：车辆切换与左下角 HUD 数据刷新（设计文档 §11）。
@@ -64,25 +63,10 @@ public class GameUIManager : MonoBehaviour
 
     void EnsureCanvasScaler()
     {
-        Canvas[] canvases = FindObjectsOfType<Canvas>(true);
-        for (int i = 0; i < canvases.Length; i++)
-            ApplyCanvasScaler(canvases[i]);
-    }
-
-    static void ApplyCanvasScaler(Canvas canvas)
-    {
-        if (canvas.renderMode == RenderMode.WorldSpace)
-            return;
-
-        CanvasScaler scaler = canvas.GetComponent<CanvasScaler>();
-        if (scaler == null)
-            scaler = canvas.gameObject.AddComponent<CanvasScaler>();
-
-        scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
-        scaler.referenceResolution = new Vector2(1920f, 1080f);
-        scaler.screenMatchMode = CanvasScaler.ScreenMatchMode.MatchWidthOrHeight;
-        scaler.matchWidthOrHeight = 0.5f;
-        scaler.referencePixelsPerUnit = 100f;
+        UiCanvasSetup setup = GetComponent<UiCanvasSetup>();
+        if (setup == null)
+            setup = gameObject.AddComponent<UiCanvasSetup>();
+        setup.ApplyToAllCanvases();
     }
 
     void BuildHud()

@@ -7,8 +7,17 @@ using UnityEngine.UI;
 [DefaultExecutionOrder(-200)]
 public class UiCanvasSetup : MonoBehaviour
 {
-    [SerializeField] Vector2 referenceResolution = new Vector2(1920f, 1080f);
+    public const float GlobalUiScale = 1.35f;
+    public static readonly Vector2 BaseReferenceResolution = new Vector2(1920f, 1080f);
+
+    [SerializeField] [Range(1f, 2f)] float uiScale = GlobalUiScale;
     [SerializeField] [Range(0f, 1f)] float matchWidthOrHeight = 0.5f;
+
+    public static Vector2 GetReferenceResolution(float scale)
+    {
+        float s = Mathf.Max(1f, scale);
+        return new Vector2(BaseReferenceResolution.x / s, BaseReferenceResolution.y / s);
+    }
 
     void Awake()
     {
@@ -17,9 +26,15 @@ public class UiCanvasSetup : MonoBehaviour
 
     public void ApplyToAllCanvases()
     {
+        Vector2 resolution = GetReferenceResolution(uiScale);
         Canvas[] canvases = FindObjectsOfType<Canvas>(true);
         for (int i = 0; i < canvases.Length; i++)
-            ApplyScaler(canvases[i], referenceResolution, matchWidthOrHeight);
+            ApplyScaler(canvases[i], resolution, matchWidthOrHeight);
+    }
+
+    public static void ApplyScaler(Canvas canvas, float scale, float match = 0.5f)
+    {
+        ApplyScaler(canvas, GetReferenceResolution(scale), match);
     }
 
     static void ApplyScaler(Canvas canvas, Vector2 resolution, float match)
