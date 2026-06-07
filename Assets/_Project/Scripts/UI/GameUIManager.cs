@@ -2,7 +2,7 @@ using UnityEngine;
 using UnityEngine.UI;
 
 /// <summary>
-/// 游戏 UI：车辆数据、物理参数、损伤状态（设计文档 §11）。
+/// 游戏 UI：车辆切换与左下角 HUD 数据刷新（设计文档 §11）。
 /// </summary>
 public class GameUIManager : MonoBehaviour
 {
@@ -19,54 +19,35 @@ public class GameUIManager : MonoBehaviour
     [Header("—— 车辆列表 ——")]
     public VehicleEntry[] vehicles;
 
-    [Header("—— 信息显示 Text ——")]
-    public Text currentVehicleText;
-    public Text speedText;
-    public Text damageText;
-    public Text driveForceText;
-    public Text frictionForceText;
-    public Text gearText;
-    public Text accelerationText;
-    public Text statusText;
-    public Text frictionCoeffText;
-    public Text massText;
-    public Text collisionInfoText;
-    public Text driveMultiplierText;
-
-    [Header("—— 参数调节 Slider ——")]
-    public Slider motorTorqueSlider;
-    public Slider frictionSlider;
-
-    [Header("—— Slider 数值范围 ——")]
-    public float motorTorqueMin = 500f;
-    public float motorTorqueMax = 8000f;
-    public float gripMin = 0.1f;
-    public float gripMax = 3f;
-
     [Header("—— 摄像机 ——")]
     public VehicleCameraController cameraController;
 
-    [Header("—— HUD 根节点（可选）——")]
-    public GameObject hudRoot;
-
     int activeIndex;
     GameSettingsManager settingsManager;
+    VehicleHudController hudController;
 
     public int VehicleCount => vehicles != null ? vehicles.Length : 0;
 
     void Awake()
     {
+        EnsureCanvasScaler();
+        DestroyLegacyHudElements();
+
         if (GetComponent<GameSettingsManager>() == null)
             gameObject.AddComponent<GameSettingsManager>();
         if (GetComponent<SettingsUIController>() == null)
             gameObject.AddComponent<SettingsUIController>();
+
+        hudController = GetComponent<VehicleHudController>();
+        if (hudController == null)
+            hudController = gameObject.AddComponent<VehicleHudController>();
     }
 
     void Start()
     {
         settingsManager = GetComponent<GameSettingsManager>();
+        BuildHud();
         if (vehicles == null || vehicles.Length == 0) return;
-        SetupSliders();
         SelectVehicle(0);
     }
 
@@ -81,20 +62,52 @@ public class GameUIManager : MonoBehaviour
         RefreshDisplay();
     }
 
-    void SetupSliders()
+    void EnsureCanvasScaler()
     {
-        if (motorTorqueSlider != null)
+        Canvas[] canvases = FindObjectsOfType<Canvas>(true);
+        for (int i = 0; i < canvases.Length; i++)
+            ApplyCanvasScaler(canvases[i]);
+    }
+
+    static void ApplyCanvasScaler(Canvas canvas)
+    {
+        if (canvas.renderMode == RenderMode.WorldSpace)
+            return;
+
+        CanvasScaler scaler = canvas.GetComponent<CanvasScaler>();
+        if (scaler == null)
+            scaler = canvas.gameObject.AddComponent<CanvasScaler>();
+
+        scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+        scaler.referenceResolution = new Vector2(1920f, 1080f);
+        scaler.screenMatchMode = CanvasScaler.ScreenMatchMode.MatchWidthOrHeight;
+        scaler.matchWidthOrHeight = 0.5f;
+        scaler.referencePixelsPerUnit = 100f;
+    }
+
+    void BuildHud()
+    {
+        Canvas canvas = GetComponent<Canvas>();
+        if (canvas == null)
+            canvas = GetComponentInParent<Canvas>();
+        if (canvas == null)
         {
-            motorTorqueSlider.minValue = motorTorqueMin;
-            motorTorqueSlider.maxValue = motorTorqueMax;
-            motorTorqueSlider.onValueChanged.AddListener(OnMotorTorqueChanged);
+            Debug.LogWarning("[GameUIManager] 未找到 Canvas，无法构建 HUD。");
+            return;
         }
 
-        if (frictionSlider != null)
+        hudController.Build(canvas.transform);
+    }
+
+    void DestroyLegacyHudElements()
+    {
+        Transform root = transform;
+        for (int i = root.childCount - 1; i >= 0; i--)
         {
-            frictionSlider.minValue = gripMin;
-            frictionSlider.maxValue = gripMax;
-            frictionSlider.onValueChanged.AddListener(OnGripChanged);
+            Transform child = root.GetChild(i);
+            string n = child.name;
+            if (n.StartsWith("Text_") || n.StartsWith("Slider_"))
+                Destroy(child.gameObject);
         }
     }
 
@@ -110,7 +123,6 @@ public class GameUIManager : MonoBehaviour
         }
 
         activeIndex = index;
-        SyncSlidersToActiveVehicle();
         SwitchCamera(index);
         settingsManager?.SyncFromActiveVehicle();
         RefreshDisplay();
@@ -139,134 +151,46 @@ public class GameUIManager : MonoBehaviour
 
     public void SetHudVisible(bool visible)
     {
-        if (hudRoot != null)
-        {
-            hudRoot.SetActive(visible);
-            return;
-        }
-
-        ToggleTextVisible(currentVehicleText, visible);
-        ToggleTextVisible(speedText, visible);
-        ToggleTextVisible(damageText, visible);
-        ToggleTextVisible(driveForceText, visible);
-        ToggleTextVisible(frictionForceText, visible);
-        ToggleTextVisible(gearText, visible);
-        ToggleTextVisible(accelerationText, visible);
-        ToggleTextVisible(statusText, visible);
-        ToggleTextVisible(frictionCoeffText, visible);
-        ToggleTextVisible(massText, visible);
-        ToggleTextVisible(collisionInfoText, visible);
-        ToggleTextVisible(driveMultiplierText, visible);
-
-        if (motorTorqueSlider != null) motorTorqueSlider.gameObject.SetActive(visible);
-        if (frictionSlider != null) frictionSlider.gameObject.SetActive(visible);
-    }
-
-    static void ToggleTextVisible(Text text, bool visible)
-    {
-        if (text != null)
-            text.gameObject.SetActive(visible);
-    }
-
-    void SyncSlidersToActiveVehicle()
-    {
-        CarController car = GetActiveController();
-        if (car == null) return;
-
-        if (motorTorqueSlider != null)
-            motorTorqueSlider.SetValueWithoutNotify(car.GetMotorTorque());
-
-        if (frictionSlider != null)
-            frictionSlider.SetValueWithoutNotify(car.GetGripCoefficient());
+        if (hudController != null && hudController.HudRoot != null)
+            hudController.HudRoot.SetActive(visible);
     }
 
     void RefreshDisplay()
     {
+        if (hudController == null) return;
+
         VehicleEntry entry = GetActiveEntry();
         CarController car = entry?.controller;
         VehicleState state = car != null ? car.GetComponent<VehicleState>() : null;
         CollisionEventRecorder recorder = CollisionManager.Instance?.Recorder;
 
-        if (currentVehicleText != null)
-            currentVehicleText.text = car != null
-                ? $"当前控制：{entry.displayName}"
-                : "当前控制：无";
+        hudController.SetVehicleTabs(VehicleCount, activeIndex);
 
         if (car == null) return;
 
-        if (speedText != null)
-            speedText.text = $"车速：{car.GetSpeed():F1} km/h";
+        float damagePct = state != null ? state.GetDamagePercentApprox() : 0f;
+        string damageStatus = state != null ? state.GetStatusText() : "完好";
+        int collisionCount = state != null ? state.CollisionCount : 0;
+        float lastImpulse = recorder != null && recorder.LastEvent.Impulse > 0f
+            ? recorder.LastEvent.Impulse
+            : state != null ? state.LastImpulse : 0f;
 
-        if (damageText != null)
-        {
-            string impulseText = state != null && state.LastImpulse > 0f
-                ? $" | 冲量：{state.LastImpulse:F0}"
-                : "";
-            float pct = state != null ? state.GetDamagePercentApprox() : 0f;
-            string status = state != null ? state.GetStatusText() : "完好";
-            damageText.text = $"损伤：{pct:F0} % ({status}){impulseText}";
-        }
-
-        if (driveForceText != null)
-            driveForceText.text = $"驱动力：{car.GetCurrentDriveForce():F0} N·m";
-
-        if (frictionForceText != null)
-            frictionForceText.text = $"地面阻力：{car.GetGroundResistance():F0} N";
-
-        if (gearText != null)
-            gearText.text = $"档位：{car.GetGear()}";
-
-        if (accelerationText != null)
-            accelerationText.text = $"加速度：{car.GetAccelerationG():F2} G";
-
-        if (statusText != null)
-            statusText.text = state != null
-                ? $"车辆状态：{state.GetStatusText()}"
-                : "车辆状态：完好";
-
-        if (frictionCoeffText != null)
-            frictionCoeffText.text = $"抓地系数：{car.GetGripCoefficient():F2}";
-
-        if (massText != null)
-            massText.text = $"质量：{car.GetMass():F0} kg | 接地轮：{car.GetGroundedWheelCount()}/4";
-
-        if (driveMultiplierText != null)
-            driveMultiplierText.text = $"动力倍率：{car.GetDriveMultiplier():P0}";
-
-        if (collisionInfoText != null)
-        {
-            int count = state != null ? state.CollisionCount : 0;
-            float lastImpulse = recorder != null && recorder.LastEvent.Impulse > 0f
-                ? recorder.LastEvent.Impulse
-                : state != null ? state.LastImpulse : 0f;
-            collisionInfoText.text = $"碰撞次数：{count} | 最近冲量：{lastImpulse:F0}";
-        }
-    }
-
-    void OnMotorTorqueChanged(float value)
-    {
-        if (settingsManager != null)
-        {
-            settingsManager.Settings.motorTorque = value;
-            settingsManager.ApplyToActiveVehicle();
-            return;
-        }
-
-        CarController car = GetActiveController();
-        if (car != null) car.SetMotorTorque(value);
-    }
-
-    void OnGripChanged(float value)
-    {
-        if (settingsManager != null)
-        {
-            settingsManager.Settings.gripCoefficient = value;
-            settingsManager.ApplyToActiveVehicle();
-            return;
-        }
-
-        CarController car = GetActiveController();
-        if (car != null) car.SetGripCoefficient(value);
+        hudController.Refresh(
+            GetVehicleDisplayName(activeIndex),
+            car.GetSpeed(),
+            car.GetGear(),
+            car.GetThrottleInput(),
+            car.GetAccelerationG(),
+            car.GetGroundedWheelCount(),
+            damagePct,
+            damageStatus,
+            car.GetDriveMultiplier(),
+            collisionCount,
+            lastImpulse,
+            car.GetCurrentDriveForce(),
+            car.GetGroundResistance(),
+            car.GetGripCoefficient(),
+            car.GetMass());
     }
 
     VehicleEntry GetActiveEntry()

@@ -124,7 +124,7 @@ public class SettingsUIController : MonoBehaviour
         overlayRoot = CreateStretchPanel(canvas.transform, "SettingsOverlay", BgOverlay);
         overlayRoot.SetActive(false);
 
-        panelRoot = CreateCenterPanel(overlayRoot.transform, "SettingsPanel", 920f, 640f, PanelBg);
+        panelRoot = CreateResponsivePanel(overlayRoot.transform, "SettingsPanel", PanelBg);
         CreateHeader(panelRoot.transform);
         CreateBody(panelRoot.transform);
         CreateFooter(panelRoot.transform);
@@ -819,16 +819,15 @@ public class SettingsUIController : MonoBehaviour
         return go;
     }
 
-    static GameObject CreateCenterPanel(Transform parent, string name, float width, float height, Color color)
+    static GameObject CreateResponsivePanel(Transform parent, string name, Color color)
     {
         GameObject go = new GameObject(name, typeof(RectTransform), typeof(Image));
         go.transform.SetParent(parent, false);
         RectTransform rect = go.GetComponent<RectTransform>();
-        rect.anchorMin = new Vector2(0.5f, 0.5f);
-        rect.anchorMax = new Vector2(0.5f, 0.5f);
-        rect.pivot = new Vector2(0.5f, 0.5f);
-        rect.sizeDelta = new Vector2(width, height);
-        rect.anchoredPosition = Vector2.zero;
+        rect.anchorMin = new Vector2(0.06f, 0.06f);
+        rect.anchorMax = new Vector2(0.94f, 0.94f);
+        rect.offsetMin = Vector2.zero;
+        rect.offsetMax = Vector2.zero;
         go.GetComponent<Image>().color = color;
         AddBorder(go, NavBorder);
         return go;
