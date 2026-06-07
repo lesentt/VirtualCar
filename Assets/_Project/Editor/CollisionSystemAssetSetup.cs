@@ -99,6 +99,8 @@ public static class CollisionSystemAssetSetup
     static void CreateAudioProfile()
     {
         LoadOrCreate<CollisionAudioProfile>(SoRoot + "/DefaultCollisionAudioProfile.asset");
+        LoadOrCreate<ProjectAudioLibrary>(SoRoot + "/ProjectAudioLibrary.asset");
+        ProjectAudioSetup.WireProjectAudioClips();
     }
 
     static void CreateVfxProfile()

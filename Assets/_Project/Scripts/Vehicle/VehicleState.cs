@@ -67,6 +67,12 @@ public class VehicleState : MonoBehaviour
     }
 
     public float GetDamagePercentApprox() => damagePercent;
+    public float GetDamageSensitivity() => damageSensitivity;
+
+    public void SetDamageSensitivity(float sensitivity)
+    {
+        damageSensitivity = Mathf.Clamp(sensitivity, 0.1f, 2f);
+    }
 
     public void ResetState()
     {

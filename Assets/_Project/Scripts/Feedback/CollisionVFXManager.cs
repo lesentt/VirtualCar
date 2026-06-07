@@ -4,6 +4,8 @@ public class CollisionVFXManager : MonoBehaviour
 {
     [SerializeField] CollisionVFXProfile profile;
 
+    bool vfxEnabled = true;
+
     void Awake()
     {
         if (profile == null)
@@ -24,7 +26,7 @@ public class CollisionVFXManager : MonoBehaviour
 
     public void OnCollision(CollisionEventData evt)
     {
-        if (evt.Impulse < profile.minImpulseForVFX)
+        if (!vfxEnabled || profile == null || evt.Impulse < profile.minImpulseForVFX)
             return;
 
         SpawnProceduralSpark(evt);
@@ -68,4 +70,8 @@ public class CollisionVFXManager : MonoBehaviour
         shape.angle = 25f;
         shape.radius = 0.05f;
     }
+
+    public bool IsEnabled() => vfxEnabled;
+    public void SetEnabled(bool enabled) => vfxEnabled = enabled;
+    public CollisionVFXProfile Profile => profile;
 }

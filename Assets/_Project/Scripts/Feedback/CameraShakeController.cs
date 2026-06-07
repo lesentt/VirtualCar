@@ -7,6 +7,7 @@ public class CameraShakeController : MonoBehaviour
     [SerializeField] float maxShakeAmplitude = 0.4f;
     [SerializeField] VehicleCameraController cameraController;
 
+    bool shakeEnabled = true;
     Coroutine shakeRoutine;
 
     void Awake()
@@ -29,7 +30,7 @@ public class CameraShakeController : MonoBehaviour
 
     public void OnCollision(CollisionEventData evt)
     {
-        if (evt.Impulse < minImpulse)
+        if (!shakeEnabled || evt.Impulse < minImpulse)
             return;
 
         CarController activeCar = FindActivePlayerCar();
@@ -76,4 +77,11 @@ public class CameraShakeController : MonoBehaviour
         camTransform.localPosition = originalLocalPos;
         shakeRoutine = null;
     }
+
+    public bool IsEnabled() => shakeEnabled;
+    public void SetEnabled(bool enabled) => shakeEnabled = enabled;
+    public float GetMinImpulse() => minImpulse;
+    public void SetMinImpulse(float impulse) => minImpulse = Mathf.Max(0f, impulse);
+    public float GetMaxShakeAmplitude() => maxShakeAmplitude;
+    public void SetMaxShakeAmplitude(float amplitude) => maxShakeAmplitude = Mathf.Clamp(amplitude, 0f, 1.5f);
 }

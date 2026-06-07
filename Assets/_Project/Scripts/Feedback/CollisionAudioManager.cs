@@ -2,15 +2,33 @@ using UnityEngine;
 
 public class CollisionAudioManager : MonoBehaviour
 {
+    public static CollisionAudioManager Instance { get; private set; }
+
     [SerializeField] CollisionAudioProfile profile;
     [SerializeField] int poolSize = 8;
 
+    bool audioEnabled = true;
+    float masterVolume = 1f;
     AudioSource[] pool;
+    AudioSource scrapeSource;
+    int scrapeContactCount;
+    float scrapeIntensity;
+
+    const float ScrapeMinTangentSpeed = 1.5f;
+    const float ScrapeFadeSpeed = 6f;
 
     void Awake()
     {
+        if (Instance != null && Instance != this)
+        {
+            Destroy(this);
+            return;
+        }
+
+        Instance = this;
+
         if (profile == null)
-            profile = ScriptableObject.CreateInstance<CollisionAudioProfile>();
+            profile = CollisionConfigProvider.AudioProfile;
 
         pool = new AudioSource[poolSize];
         for (int i = 0; i < poolSize; i++)
@@ -18,7 +36,26 @@ public class CollisionAudioManager : MonoBehaviour
             pool[i] = gameObject.AddComponent<AudioSource>();
             pool[i].playOnAwake = false;
             pool[i].spatialBlend = 1f;
+            pool[i].minDistance = 2f;
+            pool[i].maxDistance = 35f;
+            pool[i].rolloffMode = AudioRolloffMode.Linear;
         }
+
+        scrapeSource = gameObject.AddComponent<AudioSource>();
+        scrapeSource.playOnAwake = false;
+        scrapeSource.loop = true;
+        scrapeSource.spatialBlend = 1f;
+        scrapeSource.minDistance = 2f;
+        scrapeSource.maxDistance = 30f;
+        scrapeSource.rolloffMode = AudioRolloffMode.Linear;
+    }
+
+    void OnDestroy()
+    {
+        if (Instance == this)
+            Instance = null;
+
+        Subscribe(false);
     }
 
     void Start()
@@ -26,9 +63,9 @@ public class CollisionAudioManager : MonoBehaviour
         Subscribe(true);
     }
 
-    void OnDestroy()
+    void Update()
     {
-        Subscribe(false);
+        UpdateScrapeFade();
     }
 
     void Subscribe(bool subscribe)
@@ -44,7 +81,7 @@ public class CollisionAudioManager : MonoBehaviour
 
     public void OnCollision(CollisionEventData evt)
     {
-        if (profile == null || pool == null || pool.Length == 0)
+        if (!audioEnabled || profile == null || pool == null || pool.Length == 0)
             return;
 
         CollisionAudioProfile.ClipSet set = ResolveClipSet(evt.SurfaceA, evt.SurfaceB);
@@ -63,8 +100,72 @@ public class CollisionAudioManager : MonoBehaviour
 
         src.transform.position = evt.ContactPoint;
         src.clip = clip;
-        src.volume = Mathf.Lerp(0.3f, 1f, evt.Impulse / heavyThreshold) * volumeScale;
+        src.volume = Mathf.Lerp(0.3f, 1f, evt.Impulse / heavyThreshold) * volumeScale * masterVolume;
         src.pitch = Random.Range(pitchMin, pitchMax);
+        src.Play();
+    }
+
+    public void ReportScrape(Vector3 contactPoint, float tangentSpeed, float normalForce)
+    {
+        if (!audioEnabled || profile == null || profile.scrapeLoop == null)
+            return;
+
+        if (tangentSpeed < ScrapeMinTangentSpeed || normalForce < 80f)
+            return;
+
+        scrapeContactCount++;
+        float intensity = Mathf.Clamp01(tangentSpeed / 8f) * Mathf.Clamp01(normalForce / 2500f);
+        scrapeIntensity = Mathf.Max(scrapeIntensity, intensity);
+        scrapeSource.transform.position = contactPoint;
+
+        if (!scrapeSource.isPlaying)
+        {
+            scrapeSource.clip = profile.scrapeLoop;
+            scrapeSource.Play();
+        }
+
+        scrapeSource.volume = scrapeIntensity * masterVolume * 0.7f;
+        scrapeSource.pitch = Mathf.Lerp(0.85f, 1.1f, scrapeIntensity);
+    }
+
+    public void EndScrapeFrame()
+    {
+        scrapeContactCount = 0;
+    }
+
+    void UpdateScrapeFade()
+    {
+        if (scrapeSource == null)
+            return;
+
+        if (scrapeContactCount > 0)
+            return;
+
+        scrapeIntensity = Mathf.MoveTowards(scrapeIntensity, 0f, ScrapeFadeSpeed * Time.deltaTime);
+        if (scrapeIntensity <= 0.01f)
+        {
+            scrapeIntensity = 0f;
+            if (scrapeSource.isPlaying)
+                scrapeSource.Stop();
+            return;
+        }
+
+        scrapeSource.volume = scrapeIntensity * masterVolume * 0.7f;
+    }
+
+    public void PlayOneShotAt(AudioClip clip, Vector3 position, float volumeScale = 1f, float pitch = 1f)
+    {
+        if (!audioEnabled || clip == null)
+            return;
+
+        AudioSource src = GetFreeSource();
+        if (src == null)
+            return;
+
+        src.transform.position = position;
+        src.clip = clip;
+        src.volume = Mathf.Clamp01(volumeScale) * masterVolume;
+        src.pitch = pitch;
         src.Play();
     }
 
@@ -144,5 +245,45 @@ public class CollisionAudioManager : MonoBehaviour
         }
 
         return pool[0];
+    }
+
+    public bool IsEnabled() => audioEnabled;
+    public void SetEnabled(bool enabled) => audioEnabled = enabled;
+    public float GetMasterVolume() => masterVolume;
+    public void SetMasterVolume(float volume)
+    {
+        masterVolume = Mathf.Clamp01(volume);
+        SyncVehicleAudio();
+    }
+
+    public CollisionAudioProfile Profile => profile;
+
+    void SyncVehicleAudio()
+    {
+        CarController car = GameSettingsManager.Instance != null
+            ? GameSettingsManager.Instance.GetActiveCar()
+            : null;
+
+        if (car == null)
+        {
+            foreach (CarController candidate in FindObjectsOfType<CarController>())
+            {
+                if (candidate.isPlayerControlled)
+                {
+                    car = candidate;
+                    break;
+                }
+            }
+        }
+
+        if (car == null)
+            return;
+
+        VehicleAudioController vehicleAudio = car.GetComponent<VehicleAudioController>();
+        if (vehicleAudio != null)
+        {
+            vehicleAudio.SetMasterVolume(masterVolume);
+            vehicleAudio.SetEnabled(audioEnabled);
+        }
     }
 }

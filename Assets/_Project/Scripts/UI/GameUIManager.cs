@@ -1,6 +1,5 @@
 using UnityEngine;
 using UnityEngine.UI;
-using UnityEngine.Serialization;
 
 /// <summary>
 /// 游戏 UI：车辆数据、物理参数、损伤状态（设计文档 §11）。
@@ -30,6 +29,9 @@ public class GameUIManager : MonoBehaviour
     public Text accelerationText;
     public Text statusText;
     public Text frictionCoeffText;
+    public Text massText;
+    public Text collisionInfoText;
+    public Text driveMultiplierText;
 
     [Header("—— 参数调节 Slider ——")]
     public Slider motorTorqueSlider;
@@ -44,10 +46,25 @@ public class GameUIManager : MonoBehaviour
     [Header("—— 摄像机 ——")]
     public VehicleCameraController cameraController;
 
+    [Header("—— HUD 根节点（可选）——")]
+    public GameObject hudRoot;
+
     int activeIndex;
+    GameSettingsManager settingsManager;
+
+    public int VehicleCount => vehicles != null ? vehicles.Length : 0;
+
+    void Awake()
+    {
+        if (GetComponent<GameSettingsManager>() == null)
+            gameObject.AddComponent<GameSettingsManager>();
+        if (GetComponent<SettingsUIController>() == null)
+            gameObject.AddComponent<SettingsUIController>();
+    }
 
     void Start()
     {
+        settingsManager = GetComponent<GameSettingsManager>();
         if (vehicles == null || vehicles.Length == 0) return;
         SetupSliders();
         SelectVehicle(0);
@@ -95,6 +112,7 @@ public class GameUIManager : MonoBehaviour
         activeIndex = index;
         SyncSlidersToActiveVehicle();
         SwitchCamera(index);
+        settingsManager?.SyncFromActiveVehicle();
         RefreshDisplay();
     }
 
@@ -107,6 +125,48 @@ public class GameUIManager : MonoBehaviour
     public void SelectVehicle1() => SelectVehicle(0);
     public void SelectVehicle2() => SelectVehicle(1);
     public void SelectVehicle3() => SelectVehicle(2);
+
+    public string GetVehicleDisplayName(int index)
+    {
+        if (vehicles == null || index < 0 || index >= vehicles.Length)
+            return $"车辆 {index + 1}";
+        return string.IsNullOrEmpty(vehicles[index].displayName)
+            ? $"车辆 {index + 1}"
+            : vehicles[index].displayName;
+    }
+
+    public CarController GetActiveController() => GetActiveEntry()?.controller;
+
+    public void SetHudVisible(bool visible)
+    {
+        if (hudRoot != null)
+        {
+            hudRoot.SetActive(visible);
+            return;
+        }
+
+        ToggleTextVisible(currentVehicleText, visible);
+        ToggleTextVisible(speedText, visible);
+        ToggleTextVisible(damageText, visible);
+        ToggleTextVisible(driveForceText, visible);
+        ToggleTextVisible(frictionForceText, visible);
+        ToggleTextVisible(gearText, visible);
+        ToggleTextVisible(accelerationText, visible);
+        ToggleTextVisible(statusText, visible);
+        ToggleTextVisible(frictionCoeffText, visible);
+        ToggleTextVisible(massText, visible);
+        ToggleTextVisible(collisionInfoText, visible);
+        ToggleTextVisible(driveMultiplierText, visible);
+
+        if (motorTorqueSlider != null) motorTorqueSlider.gameObject.SetActive(visible);
+        if (frictionSlider != null) frictionSlider.gameObject.SetActive(visible);
+    }
+
+    static void ToggleTextVisible(Text text, bool visible)
+    {
+        if (text != null)
+            text.gameObject.SetActive(visible);
+    }
 
     void SyncSlidersToActiveVehicle()
     {
@@ -125,6 +185,7 @@ public class GameUIManager : MonoBehaviour
         VehicleEntry entry = GetActiveEntry();
         CarController car = entry?.controller;
         VehicleState state = car != null ? car.GetComponent<VehicleState>() : null;
+        CollisionEventRecorder recorder = CollisionManager.Instance?.Recorder;
 
         if (currentVehicleText != null)
             currentVehicleText.text = car != null
@@ -165,16 +226,45 @@ public class GameUIManager : MonoBehaviour
 
         if (frictionCoeffText != null)
             frictionCoeffText.text = $"抓地系数：{car.GetGripCoefficient():F2}";
+
+        if (massText != null)
+            massText.text = $"质量：{car.GetMass():F0} kg | 接地轮：{car.GetGroundedWheelCount()}/4";
+
+        if (driveMultiplierText != null)
+            driveMultiplierText.text = $"动力倍率：{car.GetDriveMultiplier():P0}";
+
+        if (collisionInfoText != null)
+        {
+            int count = state != null ? state.CollisionCount : 0;
+            float lastImpulse = recorder != null && recorder.LastEvent.Impulse > 0f
+                ? recorder.LastEvent.Impulse
+                : state != null ? state.LastImpulse : 0f;
+            collisionInfoText.text = $"碰撞次数：{count} | 最近冲量：{lastImpulse:F0}";
+        }
     }
 
     void OnMotorTorqueChanged(float value)
     {
+        if (settingsManager != null)
+        {
+            settingsManager.Settings.motorTorque = value;
+            settingsManager.ApplyToActiveVehicle();
+            return;
+        }
+
         CarController car = GetActiveController();
         if (car != null) car.SetMotorTorque(value);
     }
 
     void OnGripChanged(float value)
     {
+        if (settingsManager != null)
+        {
+            settingsManager.Settings.gripCoefficient = value;
+            settingsManager.ApplyToActiveVehicle();
+            return;
+        }
+
         CarController car = GetActiveController();
         if (car != null) car.SetGripCoefficient(value);
     }
@@ -184,6 +274,4 @@ public class GameUIManager : MonoBehaviour
         if (vehicles == null || vehicles.Length == 0) return null;
         return vehicles[Mathf.Clamp(activeIndex, 0, vehicles.Length - 1)];
     }
-
-    CarController GetActiveController() => GetActiveEntry()?.controller;
 }

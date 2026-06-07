@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e8f4a2b1c3d54e6f9a0b1c2d3e4f5a6b, type: 3}
+  m_Name: ProjectAudioLibrary
+  m_EditorClassIdentifier: 
+  engineStartup: {fileID: 8300000, guid: 56c7ad2bedbbf3a4cbb0173ec0e9d740, type: 3}
+  engineIdle: {fileID: 8300000, guid: c502041826854664683f9914f63427b0, type: 3}
+  engineLow: {fileID: 8300000, guid: 75fa27e467267c74f91f1f6f4e74ff88, type: 3}
+  engineMed: {fileID: 8300000, guid: 22cd46996da3b624bb08935264560d8c, type: 3}
+  engineHigh: {fileID: 8300000, guid: e9643d8581d235f45a62997cba851988, type: 3}
+  engineMaxRpm: {fileID: 8300000, guid: aa60e7347d433244fb6223eac9a95b85, type: 3}
+  brakeScreech: {fileID: 8300000, guid: afecaffda3d7e79419e2a949a84e99ad, type: 3}
+  horn: {fileID: 8300000, guid: f4b50cabc8c2adf4d8ade840f795ea22, type: 3}
+  propFall: {fileID: 8300000, guid: 8575070ee4b775941b9ad7ff695b7411, type: 3}
+  propBranchBreak: {fileID: 8300000, guid: 382dc972dcd78d044b35c73aedb124e6, type: 3}

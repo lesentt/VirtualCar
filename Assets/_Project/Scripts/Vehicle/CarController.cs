@@ -319,4 +319,49 @@ public class CarController : MonoBehaviour
         gripCoefficient = Mathf.Clamp(grip, 0.1f, 3f);
         ApplyGripToWheels();
     }
+
+    public float GetMaxSteerAngle() => maxSteerAngle;
+    public void SetMaxSteerAngle(float angle) => maxSteerAngle = Mathf.Clamp(angle, 5f, 45f);
+
+    public float GetBrakeTorque() => brakeTorque;
+    public void SetBrakeTorque(float torque) => brakeTorque = Mathf.Max(0f, torque);
+
+    public float GetHandbrakeTorque() => handbrakeTorque;
+    public void SetHandbrakeTorque(float torque) => handbrakeTorque = Mathf.Max(0f, torque);
+
+    public float GetRollingResistanceCoeff() => rollingResistanceCoeff;
+    public void SetRollingResistanceCoeff(float coeff) =>
+        rollingResistanceCoeff = Mathf.Clamp(coeff, 0.005f, 0.1f);
+
+    public float GetAirDragCoefficient() => airDragCoefficient;
+    public void SetAirDragCoefficient(float coeff) => airDragCoefficient = Mathf.Clamp(coeff, 0.1f, 2f);
+
+    public float GetMass() => rb != null ? rb.mass : 1000f;
+
+    public void SetMass(float mass)
+    {
+        if (rb == null) rb = GetComponent<Rigidbody>();
+        if (rb != null) rb.mass = Mathf.Clamp(mass, 500f, 5000f);
+    }
+
+    public float GetCenterOfMassY()
+    {
+        if (rb == null) rb = GetComponent<Rigidbody>();
+        return rb != null ? rb.centerOfMass.y : -0.5f;
+    }
+
+    public void SetCenterOfMassY(float y)
+    {
+        if (rb == null) rb = GetComponent<Rigidbody>();
+        if (rb == null) return;
+        Vector3 com = rb.centerOfMass;
+        com.y = Mathf.Clamp(y, -2f, 0.5f);
+        rb.centerOfMass = com;
+    }
+
+    public float GetDriveMultiplier() => driveMultiplier;
+    public int GetGroundedWheelCount() => groundedWheelCount;
+    public float GetThrottleInput() => throttleInput;
+    public bool IsBraking() => isBraking;
+    public bool IsHandbraking() => isHandbraking;
 }

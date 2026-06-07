@@ -14,6 +14,9 @@ public class CollisionManager : MonoBehaviour
     public CollisionEventChannel EventChannel => eventChannel;
     public CollisionEventRecorder Recorder => recorder;
     public DeformationConfig DefaultDeformationConfig => defaultDeformationConfig;
+    public float MinImpulse => minImpulse;
+
+    public void SetMinImpulse(float impulse) => minImpulse = Mathf.Max(0f, impulse);
 
     public void SetConfig(DeformationConfig deformConfig, CollisionEventChannel channel)
     {

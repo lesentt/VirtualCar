@@ -33,12 +33,20 @@ public class DestructibleProp : MonoBehaviour
 
     Rigidbody rb;
     bool hasFallen;
+    float baseToppleThreshold;
+    float baseToppleForceScale;
 
     public bool HasFallen => hasFallen;
     public float GetEffectiveMass() => mass;
 
     void Awake()
     {
+        if (toppleImpulseThreshold <= 0f)
+            toppleImpulseThreshold = GetDefaultToppleThreshold(kind);
+
+        baseToppleThreshold = toppleImpulseThreshold;
+        baseToppleForceScale = toppleForceScale;
+
         rb = GetComponent<Rigidbody>();
         if (rb != null)
         {
@@ -88,6 +96,7 @@ public class DestructibleProp : MonoBehaviour
     void Topple(Collision collision, float impulse)
     {
         hasFallen = true;
+        PlayToppleSound(collision, impulse);
 
         if (rb == null)
             rb = GetComponent<Rigidbody>();
@@ -184,5 +193,35 @@ public class DestructibleProp : MonoBehaviour
             case PropKind.Stone: return 5000f;
             default: return 2500f;
         }
+    }
+
+    public void ApplyGlobalModifiers(float thresholdScale, float forceScale)
+    {
+        toppleImpulseThreshold = baseToppleThreshold * Mathf.Clamp(thresholdScale, 0.2f, 3f);
+        toppleForceScale = Mathf.Clamp(baseToppleForceScale * forceScale, 0.05f, 0.5f);
+    }
+
+    public float GetBaseToppleThreshold() => baseToppleThreshold;
+    public float GetBaseToppleForceScale() => baseToppleForceScale;
+
+    void PlayToppleSound(Collision collision, float impulse)
+    {
+        ProjectAudioLibrary library = CollisionConfigProvider.ProjectAudioLibrary;
+        if (library == null)
+            return;
+
+        Vector3 point = collision.contactCount > 0
+            ? collision.GetContact(0).point
+            : transform.position;
+
+        AudioClip clip = kind == PropKind.Tree ? library.propFall : library.propBranchBreak;
+        if (clip == null)
+            clip = library.propFall;
+
+        if (clip == null || CollisionAudioManager.Instance == null)
+            return;
+
+        float volume = Mathf.Clamp(impulse / 5000f, 0.4f, 1f);
+        CollisionAudioManager.Instance.PlayOneShotAt(clip, point, volume);
     }
 }

@@ -83,6 +83,9 @@ public static class VehicleDeformationSetup
         if (root.GetComponent<VehicleState>() == null)
             root.AddComponent<VehicleState>();
 
+        if (root.GetComponent<VehicleAudioController>() == null)
+            root.AddComponent<VehicleAudioController>();
+
         root.layer = CollisionTypes.GetLayerIndex(CollisionTypes.LayerVehicle);
     }
 
