@@ -3,10 +3,9 @@ using UnityEngine;
 public class DamageEvaluator
 {
     readonly DeformationConfig config;
-    float accumulatedImpulse;
-    float maxDepthRatio;
+    float accumulatedDamage;
 
-    public float AccumulatedImpulse => accumulatedImpulse;
+    public float AccumulatedImpulse => accumulatedDamage;
     public float DamagePercent { get; private set; }
 
     public DamageEvaluator(DeformationConfig deformationConfig)
@@ -15,42 +14,55 @@ public class DamageEvaluator
     }
 
     /// <summary>
-    /// 根据冲量与形变深度更新损伤百分比，返回损伤等级。
+    /// 每次碰撞按「本次冲量 + 本次形变深度」增量累加损伤。
     /// </summary>
-    public DamageLevel Evaluate(float impulse, float partDepthRatio, float sensitivity = 1f)
+    public DamageLevel Evaluate(float impulse, float incrementalDepthRatio, float sensitivity = 1f)
     {
+        float hitDamage = 0f;
         float effectiveImpulse = ScaleImpulseForDamage(impulse);
 
         if (effectiveImpulse >= config.minDamageImpulse)
         {
-            float scaled = effectiveImpulse * config.damageImpulseScale * sensitivity;
-            accumulatedImpulse += scaled;
+            float impulsePercent = config.totaledThreshold > 0f
+                ? (effectiveImpulse / config.totaledThreshold) * 100f
+                : 0f;
+            hitDamage += impulsePercent * config.damageImpulseScale * sensitivity;
         }
 
-        maxDepthRatio = Mathf.Max(maxDepthRatio, partDepthRatio);
+        if (incrementalDepthRatio > 0f)
+        {
+            float depthHit = incrementalDepthRatio * config.depthDamageWeight * 100f * sensitivity;
+            depthHit *= GetLightImpactDepthScale(impulse);
+            hitDamage += depthHit;
+        }
 
-        float impulsePercent = config.totaledThreshold > 0f
-            ? (accumulatedImpulse / config.totaledThreshold) * 100f
-            : 0f;
-
-        float depthPercent = maxDepthRatio * 100f * config.depthDamageWeight;
-        DamagePercent = Mathf.Clamp(Mathf.Max(impulsePercent, depthPercent), 0f, 100f);
-
+        accumulatedDamage = Mathf.Min(100f, accumulatedDamage + hitDamage);
+        DamagePercent = accumulatedDamage;
         return LevelFromPercent(DamagePercent);
     }
 
     /// <summary>
-    /// 低速轻碰时降低有效冲量，避免轻轻一蹭就满损。
+    /// 低速轻碰时降低有效冲量，但保留一定损伤贡献，避免「一蹭就 30%」或「完全不涨」两个极端。
     /// </summary>
     float ScaleImpulseForDamage(float impulse)
     {
         if (impulse <= config.lightDamageThreshold)
         {
-            float t = impulse / Mathf.Max(config.lightDamageThreshold, 1f);
-            return impulse * t * t;
+            float t = Mathf.Clamp01(impulse / Mathf.Max(config.lightDamageThreshold, 1f));
+            float softScale = Mathf.Lerp(0.15f, 1f, t * t * t);
+            return impulse * softScale;
         }
 
         return impulse;
+    }
+
+    float GetLightImpactDepthScale(float impulse)
+    {
+        if (impulse >= config.lightDamageThreshold)
+            return 1f;
+
+        float t = Mathf.Clamp01(impulse / Mathf.Max(config.lightDamageThreshold, 1f));
+        return t * t;
     }
 
     static DamageLevel LevelFromPercent(float percent)
@@ -63,8 +75,7 @@ public class DamageEvaluator
 
     public void Reset()
     {
-        accumulatedImpulse = 0f;
-        maxDepthRatio = 0f;
+        accumulatedDamage = 0f;
         DamagePercent = 0f;
     }
 

@@ -19,12 +19,17 @@ MonoBehaviour:
   accumulateRatio: 0.92
   deformDepthMultiplier: 4.5
   maxVerticesPerFrame: 500
-  minDamageImpulse: 500
-  damageImpulseScale: 0.28
-  depthDamageWeight: 0.3
+  minDamageImpulse: 450
+  damageImpulseScale: 0.38
+  depthDamageWeight: 0.07
   lightDamageThreshold: 6000
   heavyDamageThreshold: 20000
-  totaledThreshold: 50000
+  totaledThreshold: 42000
+  enableWear: 1
+  wearThreshold: 350
+  wearImpulseScale: 0.00018
+  wearMaskResolution: 512
+  wearStampRadius: 0.14
   partOverrides:
   - part: 0
     maxDepth: 0.45

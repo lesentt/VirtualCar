@@ -21,6 +21,7 @@ public static class CollisionSystemAssetSetup
         CreateVehicleEntityProfile();
         CreateAudioProfile();
         CreateVfxProfile();
+        CreateVehicleWearProfile();
 
         AssetDatabase.SaveAssets();
         AssetDatabase.Refresh();
@@ -62,12 +63,17 @@ public static class CollisionSystemAssetSetup
         config.accumulateRatio = 0.92f;
         config.deformDepthMultiplier = 4.5f;
         config.maxVerticesPerFrame = 500;
-        config.minDamageImpulse = 500f;
-        config.damageImpulseScale = 0.28f;
-        config.depthDamageWeight = 0.3f;
+        config.minDamageImpulse = 450f;
+        config.damageImpulseScale = 0.38f;
+        config.depthDamageWeight = 0.07f;
         config.lightDamageThreshold = 6000f;
         config.heavyDamageThreshold = 20000f;
-        config.totaledThreshold = 50000f;
+        config.totaledThreshold = 42000f;
+        config.enableWear = true;
+        config.wearThreshold = 350f;
+        config.wearImpulseScale = 0.00018f;
+        config.wearMaskResolution = 512;
+        config.wearStampRadius = 0.14f;
         config.partOverrides = new[]
         {
             new PartDeformOverride { part = VehiclePartType.FrontBumper, maxDepth = 0.45f, radius = 1.1f },
@@ -108,6 +114,24 @@ public static class CollisionSystemAssetSetup
     {
         LoadOrCreate<CollisionVFXProfile>(SoRoot + "/DefaultCollisionVFXProfile.asset");
     }
+
+    static void CreateVehicleWearProfile()
+    {
+        string path = SoRoot + "/VehicleWearProfile.asset";
+        VehicleWearProfile profile = LoadOrCreate<VehicleWearProfile>(path);
+        profile.metalLightColor = LoadTexture("Assets/_Project/Materials/Metal054B_1K-JPG/Metal054B_1K-JPG_Color.jpg");
+        profile.metalLightNormal = LoadTexture("Assets/_Project/Materials/Metal054B_1K-JPG/Metal054B_1K-JPG_NormalGL.jpg");
+        profile.metalLightRoughness = LoadTexture("Assets/_Project/Materials/Metal054B_1K-JPG/Metal054B_1K-JPG_Roughness.jpg");
+        profile.metalHeavyColor = LoadTexture("Assets/_Project/Materials/Metal059C_1K-JPG/Metal059C_1K-JPG_Color.jpg");
+        profile.metalHeavyNormal = LoadTexture("Assets/_Project/Materials/Metal059C_1K-JPG/Metal059C_1K-JPG_NormalGL.jpg");
+        profile.metalHeavyRoughness = LoadTexture("Assets/_Project/Materials/Metal059C_1K-JPG/Metal059C_1K-JPG_Roughness.jpg");
+        profile.metalTiling = 4f;
+        profile.grimeAmount = 0.38f;
+        EditorUtility.SetDirty(profile);
+    }
+
+    static Texture2D LoadTexture(string assetPath) =>
+        AssetDatabase.LoadAssetAtPath<Texture2D>(assetPath);
 
     static T LoadOrCreate<T>(string path) where T : ScriptableObject
     {

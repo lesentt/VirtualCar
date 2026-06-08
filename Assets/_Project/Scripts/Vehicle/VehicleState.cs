@@ -6,7 +6,7 @@ public class VehicleState : MonoBehaviour
     [LabelText("损伤敏感度")]
     [Tooltip("越小越耐撞。轿车建议 0.25~0.35，警车建议 0.55~0.7")]
     [Range(0.1f, 2f)]
-    public float damageSensitivity = 0.8f;
+    public float damageSensitivity = 0.16f;
 
     DamageLevel damageLevel = DamageLevel.Intact;
     float damagePercent;

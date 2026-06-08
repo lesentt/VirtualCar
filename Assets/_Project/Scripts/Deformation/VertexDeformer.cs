@@ -24,11 +24,18 @@ public static class VertexDeformer
 
         Transform t = part.meshFilter != null ? part.meshFilter.transform : part.transform;
         Vector3 localHit = t.InverseTransformPoint(worldContact);
-        Vector3 localNormal = t.InverseTransformDirection(worldNormal).normalized;
+        Vector3 localNormal = t.InverseTransformDirection(worldNormal);
         if (localNormal.sqrMagnitude < 0.001f)
             localNormal = Vector3.forward;
 
-        int affected = part.DeformVertices(localHit, localNormal, depth, radius, config.falloff);
+        Vector3 inward = part.ResolveInwardNormal(localHit, localNormal);
+        if (part.TryGetImpactSurface(localHit, out Vector3 surfaceHit, out Vector3 surfaceInward, radius * 1.5f))
+        {
+            localHit = surfaceHit;
+            inward = surfaceInward;
+        }
+
+        int affected = part.DeformVertices(localHit, inward, depth, radius, config.falloff);
         if (affected <= 0)
             return 0f;
 
@@ -39,7 +46,7 @@ public static class VertexDeformer
             ColliderSyncService.SyncBox(
                 part.SyncCollider,
                 localHit,
-                localNormal,
+                inward,
                 totalDepth,
                 radius,
                 part.OriginalColliderSize,

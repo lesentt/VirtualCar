@@ -19,7 +19,7 @@ public class RuntimeGameSettings
     public float centerOfMassY = -0.5f;
 
     [Header("损伤")]
-    public float damageSensitivity = 0.8f;
+    public float damageSensitivity = 0.16f;
 
     [Header("形变")]
     public float deformThreshold = 500f;
@@ -28,9 +28,9 @@ public class RuntimeGameSettings
     public float falloff = 1.4f;
     public float accumulateRatio = 0.92f;
     public float deformDepthMultiplier = 4.5f;
-    public float damageImpulseScale = 0.28f;
-    public float depthDamageWeight = 0.3f;
-    public float totaledThreshold = 50000f;
+    public float damageImpulseScale = 0.38f;
+    public float depthDamageWeight = 0.07f;
+    public float totaledThreshold = 42000f;
     public int maxVerticesPerFrame = 500;
 
     [Header("碰撞")]
@@ -160,7 +160,7 @@ public class RuntimeGameSettings
         airDragCoefficient = 0.35f;
         mass = 1100f;
         centerOfMassY = -0.45f;
-        damageSensitivity = 0.3f;
+        damageSensitivity = 0.16f;
     }
 
     public void ApplyPresetSport()
@@ -174,7 +174,7 @@ public class RuntimeGameSettings
         airDragCoefficient = 0.55f;
         mass = 950f;
         centerOfMassY = -0.55f;
-        damageSensitivity = 0.45f;
+        damageSensitivity = 0.24f;
     }
 
     public void ApplyPresetPolice()
@@ -188,6 +188,6 @@ public class RuntimeGameSettings
         airDragCoefficient = 0.4f;
         mass = 1400f;
         centerOfMassY = -0.5f;
-        damageSensitivity = 0.65f;
+        damageSensitivity = 0.42f;
     }
 }

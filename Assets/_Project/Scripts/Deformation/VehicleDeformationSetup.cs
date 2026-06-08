@@ -65,6 +65,12 @@ public static class VehicleDeformationSetup
             }
 
             part.Initialize(vehicleRoot);
+
+            PartWearApplicator wear = part.GetComponent<PartWearApplicator>();
+            VehicleWearProfile wearProfile = CollisionConfigProvider.WearProfile;
+            DeformationConfig deformConfig = CollisionConfigProvider.GetDeformationConfig();
+            if (wear != null && wearProfile != null && deformConfig != null && deformConfig.enableWear)
+                wear.Initialize(vehicleRoot, wearProfile, deformConfig.wearMaskResolution);
         }
     }
 
@@ -98,11 +104,11 @@ public static class VehicleDeformationSetup
 
         string lower = root.name.ToLowerInvariant();
         if (lower.Contains("police"))
-            state.damageSensitivity = 0.65f;
+            state.damageSensitivity = 0.42f;
         else if (lower.Contains("taxi"))
-            state.damageSensitivity = 0.32f;
+            state.damageSensitivity = 0.20f;
         else if (lower.Contains("car"))
-            state.damageSensitivity = 0.28f;
+            state.damageSensitivity = 0.16f;
     }
 
     static void ConfigureRigidbody(GameObject root)
@@ -144,6 +150,9 @@ public static class VehicleDeformationSetup
 
             part.Configure(root, def.partType, mf, box);
             partGo.layer = root.layer;
+
+            if (partGo.GetComponent<PartWearApplicator>() == null)
+                partGo.AddComponent<PartWearApplicator>();
         }
     }
 

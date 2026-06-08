@@ -49,7 +49,7 @@ public class CarController : MonoBehaviour
     public float motorTorque = 1500f;
 
     [LabelText("最大转向角")]
-    [Tooltip("前轮最大转向角（度）。已内置随车速限制：低速防原地转圈、高速减舵。仍太快可调到 18~20")]
+    [Tooltip("前轮最大转向角（度）。高速时会自动减小舵角以保持稳定")]
     public float maxSteerAngle = 18f;
 
     [LabelText("刹车力矩")]
@@ -169,14 +169,10 @@ public class CarController : MonoBehaviour
 
     void ApplyWheelDrive()
     {
-        float forwardKmh = Vector3.Dot(GetHorizontalVelocity(), transform.forward) * 3.6f;
         float speed = GetHorizontalSpeedKmh();
 
-        // 按住 W 起步时：车头速度不够前不转向，避免 W+D 原地转圈
         float steerScale = 1f;
-        if (throttleInput > 0.1f && forwardKmh < 12f)
-            steerScale = 0f;
-        else if (speed > 50f)
+        if (speed > 50f)
             steerScale = Mathf.Lerp(1f, 0.45f, Mathf.Clamp01((speed - 50f) / 50f));
 
         float steerAngle = maxSteerAngle * steerInput * steerScale;

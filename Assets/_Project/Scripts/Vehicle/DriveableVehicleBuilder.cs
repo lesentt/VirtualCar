@@ -40,7 +40,7 @@ public static class DriveableVehicleBuilder
         gripCoefficient = 2.8f,
         rollingResistanceCoeff = 0.07f,
         airDragCoefficient = 0.85f,
-        damageSensitivity = 0.32f,
+        damageSensitivity = 0.16f,
         centerOfMassY = -10f,
         wheelMeshFl = "TS_WheelFL",
         wheelMeshFr = "TS_WheelFR",
