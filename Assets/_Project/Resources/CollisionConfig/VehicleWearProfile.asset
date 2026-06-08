@@ -12,11 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8c4e2f1a9b7d6e5c4a3b2d1e0f9a8b7c, type: 3}
   m_Name: VehicleWearProfile
   m_EditorClassIdentifier: 
-  metalLightColor: {fileID: 2800000, guid: 4872c4beaa90a924182e324095ad36d7, type: 3}
-  metalLightNormal: {fileID: 2800000, guid: 434c58c3175c21041a6a8fa47e222f3a, type: 3}
-  metalLightRoughness: {fileID: 2800000, guid: 7a6b61faeb56fd94b96d103d4da54084, type: 3}
-  metalHeavyColor: {fileID: 2800000, guid: 336779d3b1b306e49ba60b135e411267, type: 3}
-  metalHeavyNormal: {fileID: 2800000, guid: f83ef4e8c56bee848bf813fd7b9ac6ac, type: 3}
-  metalHeavyRoughness: {fileID: 2800000, guid: ada788eaa880245489d4a7bd88674b43, type: 3}
-  metalTiling: 4
-  grimeAmount: 0.38
+  wearMetalColor: {fileID: 2800000, guid: 336779d3b1b306e49ba60b135e411267, type: 3}
+  wearMetalNormal: {fileID: 2800000, guid: f83ef4e8c56bee848bf813fd7b9ac6ac, type: 3}
+  wearMetalRoughness: {fileID: 2800000, guid: ada788eaa880245489d4a7bd88674b43, type: 3}
+  metalTiling: 5
+  grimeAmount: 0.45
+  wearBlendPower: 2.2

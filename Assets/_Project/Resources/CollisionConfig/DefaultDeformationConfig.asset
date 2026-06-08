@@ -26,10 +26,11 @@ MonoBehaviour:
   heavyDamageThreshold: 20000
   totaledThreshold: 42000
   enableWear: 1
-  wearThreshold: 350
-  wearImpulseScale: 0.00018
+  wearThreshold: 300
+  wearImpulseScale: 0.00032
+  wearStrengthMin: 0.28
   wearMaskResolution: 512
-  wearStampRadius: 0.14
+  wearStampRadius: 0.18
   partOverrides:
   - part: 0
     maxDepth: 0.45

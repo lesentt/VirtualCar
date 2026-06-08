@@ -22,10 +22,11 @@ public class DeformationConfig : ScriptableObject
 
     [Header("做旧（碰撞区域磨损）")]
     public bool enableWear = true;
-    public float wearThreshold = 350f;
-    public float wearImpulseScale = 0.00018f;
+    public float wearThreshold = 300f;
+    public float wearImpulseScale = 0.00032f;
+    public float wearStrengthMin = 0.28f;
     public int wearMaskResolution = 512;
-    public float wearStampRadius = 0.14f;
+    public float wearStampRadius = 0.18f;
 
     public PartDeformOverride[] partOverrides;
 

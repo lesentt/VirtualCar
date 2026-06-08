@@ -29,7 +29,7 @@ public static class VertexDeformer
             localNormal = Vector3.forward;
 
         Vector3 inward = part.ResolveInwardNormal(localHit, localNormal);
-        if (part.TryGetImpactSurface(localHit, out Vector3 surfaceHit, out Vector3 surfaceInward, radius * 1.5f))
+        if (part.TryGetImpactSurface(localHit, out Vector3 surfaceHit, out Vector3 surfaceInward, out _, radius * 1.5f))
         {
             localHit = surfaceHit;
             inward = surfaceInward;

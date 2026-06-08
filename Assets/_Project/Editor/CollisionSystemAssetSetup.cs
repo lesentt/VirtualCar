@@ -70,10 +70,11 @@ public static class CollisionSystemAssetSetup
         config.heavyDamageThreshold = 20000f;
         config.totaledThreshold = 42000f;
         config.enableWear = true;
-        config.wearThreshold = 350f;
-        config.wearImpulseScale = 0.00018f;
+        config.wearThreshold = 300f;
+        config.wearImpulseScale = 0.00032f;
+        config.wearStrengthMin = 0.28f;
         config.wearMaskResolution = 512;
-        config.wearStampRadius = 0.14f;
+        config.wearStampRadius = 0.18f;
         config.partOverrides = new[]
         {
             new PartDeformOverride { part = VehiclePartType.FrontBumper, maxDepth = 0.45f, radius = 1.1f },
@@ -119,14 +120,12 @@ public static class CollisionSystemAssetSetup
     {
         string path = SoRoot + "/VehicleWearProfile.asset";
         VehicleWearProfile profile = LoadOrCreate<VehicleWearProfile>(path);
-        profile.metalLightColor = LoadTexture("Assets/_Project/Materials/Metal054B_1K-JPG/Metal054B_1K-JPG_Color.jpg");
-        profile.metalLightNormal = LoadTexture("Assets/_Project/Materials/Metal054B_1K-JPG/Metal054B_1K-JPG_NormalGL.jpg");
-        profile.metalLightRoughness = LoadTexture("Assets/_Project/Materials/Metal054B_1K-JPG/Metal054B_1K-JPG_Roughness.jpg");
-        profile.metalHeavyColor = LoadTexture("Assets/_Project/Materials/Metal059C_1K-JPG/Metal059C_1K-JPG_Color.jpg");
-        profile.metalHeavyNormal = LoadTexture("Assets/_Project/Materials/Metal059C_1K-JPG/Metal059C_1K-JPG_NormalGL.jpg");
-        profile.metalHeavyRoughness = LoadTexture("Assets/_Project/Materials/Metal059C_1K-JPG/Metal059C_1K-JPG_Roughness.jpg");
-        profile.metalTiling = 4f;
-        profile.grimeAmount = 0.38f;
+        profile.wearMetalColor = LoadTexture("Assets/_Project/Materials/Metal059C_1K-JPG/Metal059C_1K-JPG_Color.jpg");
+        profile.wearMetalNormal = LoadTexture("Assets/_Project/Materials/Metal059C_1K-JPG/Metal059C_1K-JPG_NormalGL.jpg");
+        profile.wearMetalRoughness = LoadTexture("Assets/_Project/Materials/Metal059C_1K-JPG/Metal059C_1K-JPG_Roughness.jpg");
+        profile.metalTiling = 5f;
+        profile.grimeAmount = 0.45f;
+        profile.wearBlendPower = 2.2f;
         EditorUtility.SetDirty(profile);
     }
 

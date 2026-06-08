@@ -5,14 +5,12 @@ Shader "VirtualVehicle/VehicleBodyWear"
         _Color ("Color", Color) = (1,1,1,1)
         _MainTex ("Paint Albedo", 2D) = "white" {}
         _WearMask ("Wear Mask", 2D) = "black" {}
-        _MetalLightTex ("Light Metal", 2D) = "gray" {}
-        _MetalHeavyTex ("Heavy Metal", 2D) = "gray" {}
-        _MetalLightNormal ("Light Normal", 2D) = "bump" {}
-        _MetalHeavyNormal ("Heavy Normal", 2D) = "bump" {}
-        _MetalLightRough ("Light Roughness", 2D) = "white" {}
-        _MetalHeavyRough ("Heavy Roughness", 2D) = "white" {}
-        _WearTiling ("Metal Tiling", Float) = 4
-        _WearGrime ("Grime", Range(0, 1)) = 0.35
+        _WearMetalTex ("Wear Metal", 2D) = "gray" {}
+        _WearMetalNormal ("Wear Normal", 2D) = "bump" {}
+        _WearMetalRough ("Wear Roughness", 2D) = "white" {}
+        _WearTiling ("Metal Tiling", Float) = 5
+        _WearGrime ("Grime", Range(0, 1)) = 0.45
+        _WearBlendPower ("Wear Blend Power", Float) = 2.2
         _Glossiness ("Paint Smoothness", Range(0, 1)) = 0.5
         _Metallic ("Paint Metallic", Range(0, 1)) = 0
     }
@@ -28,16 +26,14 @@ Shader "VirtualVehicle/VehicleBodyWear"
 
         sampler2D _MainTex;
         sampler2D _WearMask;
-        sampler2D _MetalLightTex;
-        sampler2D _MetalHeavyTex;
-        sampler2D _MetalLightNormal;
-        sampler2D _MetalHeavyNormal;
-        sampler2D _MetalLightRough;
-        sampler2D _MetalHeavyRough;
+        sampler2D _WearMetalTex;
+        sampler2D _WearMetalNormal;
+        sampler2D _WearMetalRough;
 
         fixed4 _Color;
         half _WearTiling;
         half _WearGrime;
+        half _WearBlendPower;
         half _Glossiness;
         half _Metallic;
 
@@ -50,28 +46,23 @@ Shader "VirtualVehicle/VehicleBodyWear"
         {
             fixed4 paint = tex2D(_MainTex, IN.uv_MainTex) * _Color;
             half wear = tex2D(_WearMask, IN.uv_MainTex).r;
-            half wearCurve = saturate(wear * 1.15);
+            half wearCurve = saturate(pow(wear, 0.85) * _WearBlendPower);
 
             float2 metalUv = IN.uv_MainTex * _WearTiling;
-            fixed4 metalLight = tex2D(_MetalLightTex, metalUv);
-            fixed4 metalHeavy = tex2D(_MetalHeavyTex, metalUv);
-            fixed4 metal = lerp(metalLight, metalHeavy, wearCurve);
-            metal.rgb *= 1.0h - _WearGrime * wearCurve * wearCurve;
+            fixed4 metal = tex2D(_WearMetalTex, metalUv);
+            metal.rgb *= 1.0h - _WearGrime * wearCurve;
 
             o.Albedo = lerp(paint.rgb, metal.rgb, wearCurve);
 
             fixed3 paintNormal = fixed3(0, 0, 1);
-            fixed3 nLight = UnpackNormal(tex2D(_MetalLightNormal, metalUv));
-            fixed3 nHeavy = UnpackNormal(tex2D(_MetalHeavyNormal, metalUv));
-            fixed3 metalNormal = normalize(lerp(nLight, nHeavy, wearCurve));
+            fixed3 metalNormal = UnpackNormal(tex2D(_WearMetalNormal, metalUv));
             o.Normal = lerp(paintNormal, metalNormal, wearCurve);
 
-            half roughLight = tex2D(_MetalLightRough, metalUv).r;
-            half roughHeavy = tex2D(_MetalHeavyRough, metalUv).r;
-            half metalSmooth = 1.0h - lerp(roughLight, roughHeavy, wearCurve);
+            half rough = tex2D(_WearMetalRough, metalUv).r;
+            half metalSmooth = (1.0h - rough) * 0.5h;
 
-            o.Metallic = lerp(_Metallic, 0.92h, wearCurve);
-            o.Smoothness = lerp(_Glossiness, metalSmooth * 0.55h, wearCurve);
+            o.Metallic = lerp(_Metallic, 0.95h, wearCurve);
+            o.Smoothness = lerp(_Glossiness, metalSmooth, wearCurve);
         }
         ENDCG
     }

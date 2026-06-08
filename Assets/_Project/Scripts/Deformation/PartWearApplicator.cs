@@ -91,13 +91,15 @@ public class PartWearApplicator : MonoBehaviour
             : transform;
 
         Vector3 localHit = partTransform.InverseTransformPoint(worldContact);
-        if (!deformablePart.TryGetNearestUv(localHit, out Vector2 uv))
+        if (!deformablePart.TryGetImpactSurface(localHit, out _, out _, out Vector2 uv, 2f)
+            && !deformablePart.TryGetNearestUv(localHit, out uv, 2f))
             return;
 
         config.GetPartSettings(deformablePart.PartType, out _, out float deformRadius);
         float radiusScale = deformRadius > 0f ? deformRadius / config.deformRadius : 1f;
-        float strength = Mathf.Clamp01(impulse * config.wearImpulseScale * radiusScale);
-        float stampRadius = config.wearStampRadius * Mathf.Lerp(0.75f, 1.35f, strength);
+        float strength = impulse * config.wearImpulseScale * radiusScale;
+        strength = Mathf.Clamp(Mathf.Max(strength, config.wearStrengthMin), 0f, 1f);
+        float stampRadius = config.wearStampRadius * Mathf.Lerp(0.85f, 1.45f, strength);
 
         StampWearMask(uv, stampRadius, strength);
     }
@@ -237,13 +239,11 @@ public class PartWearApplicator : MonoBehaviour
 
     static void ApplyProfileTextures(Material mat, VehicleWearProfile profile)
     {
-        mat.SetTexture("_MetalLightTex", profile.metalLightColor);
-        mat.SetTexture("_MetalHeavyTex", profile.metalHeavyColor);
-        mat.SetTexture("_MetalLightNormal", profile.metalLightNormal);
-        mat.SetTexture("_MetalHeavyNormal", profile.metalHeavyNormal);
-        mat.SetTexture("_MetalLightRough", profile.metalLightRoughness);
-        mat.SetTexture("_MetalHeavyRough", profile.metalHeavyRoughness);
+        mat.SetTexture("_WearMetalTex", profile.wearMetalColor);
+        mat.SetTexture("_WearMetalNormal", profile.wearMetalNormal);
+        mat.SetTexture("_WearMetalRough", profile.wearMetalRoughness);
         mat.SetFloat("_WearTiling", profile.metalTiling);
         mat.SetFloat("_WearGrime", profile.grimeAmount);
+        mat.SetFloat("_WearBlendPower", profile.wearBlendPower);
     }
 }

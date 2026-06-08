@@ -95,7 +95,7 @@ public class DeformablePart : MonoBehaviour
         if (!initialized || workingVerts == null || depth <= 0f || radius <= 0f)
             return 0;
 
-        if (!TryGetImpactSurface(localHit, out localHit, out Vector3 inward, radius * 1.5f))
+        if (!TryGetImpactSurface(localHit, out localHit, out Vector3 inward, out _, radius * 1.5f))
             inward = ResolveInwardNormal(localHit, localNormal);
 
         inward = inward.normalized;
@@ -134,16 +134,18 @@ public class DeformablePart : MonoBehaviour
     /// 将碰撞点投影到 Mesh 表面，并返回指向部件内部的法线。
     /// </summary>
     public bool TryGetImpactSurface(Vector3 localPoint, out Vector3 surfacePoint,
-        out Vector3 inwardNormal, float maxDistance = 0.6f)
+        out Vector3 inwardNormal, out Vector2 uv, float maxDistance = 1.5f)
     {
         surfacePoint = localPoint;
         inwardNormal = Vector3.forward;
+        uv = Vector2.zero;
 
         Mesh mesh = workingMesh != null ? workingMesh : meshFilter != null ? meshFilter.sharedMesh : null;
         if (mesh == null)
             return false;
 
         Vector3[] verts = workingVerts ?? mesh.vertices;
+        Vector2[] uvs = mesh.uv;
         int[] tris = mesh.triangles;
         if (verts == null || verts.Length == 0 || tris == null || tris.Length < 3)
             return false;
@@ -152,12 +154,19 @@ public class DeformablePart : MonoBehaviour
         float bestDistSq = maxDistSq;
         bool found = false;
         Vector3 bestNormal = Vector3.up;
+        int bestI0 = 0;
+        int bestI1 = 0;
+        int bestI2 = 0;
+        Vector3 bestClosest = localPoint;
 
         for (int i = 0; i < tris.Length; i += 3)
         {
-            Vector3 a = verts[tris[i]];
-            Vector3 b = verts[tris[i + 1]];
-            Vector3 c = verts[tris[i + 2]];
+            int i0 = tris[i];
+            int i1 = tris[i + 1];
+            int i2 = tris[i + 2];
+            Vector3 a = verts[i0];
+            Vector3 b = verts[i1];
+            Vector3 c = verts[i2];
             Vector3 closest = ClosestPointOnTriangle(localPoint, a, b, c);
             float distSq = (closest - localPoint).sqrMagnitude;
             if (distSq >= bestDistSq)
@@ -165,7 +174,11 @@ public class DeformablePart : MonoBehaviour
 
             bestDistSq = distSq;
             surfacePoint = closest;
+            bestClosest = closest;
             bestNormal = Vector3.Cross(b - a, c - a).normalized;
+            bestI0 = i0;
+            bestI1 = i1;
+            bestI2 = i2;
             found = true;
         }
 
@@ -173,7 +186,35 @@ public class DeformablePart : MonoBehaviour
             return false;
 
         inwardNormal = ResolveInwardNormal(surfacePoint, bestNormal);
+
+        if (uvs != null && uvs.Length == verts.Length)
+        {
+            ComputeBarycentric(bestClosest, verts[bestI0], verts[bestI1], verts[bestI2],
+                out float wa, out float wb, out float wc);
+            uv = uvs[bestI0] * wa + uvs[bestI1] * wb + uvs[bestI2] * wc;
+        }
+        else
+        {
+            uv = PlanarFallbackUv(surfacePoint, inwardNormal, mesh.bounds);
+        }
+
         return true;
+    }
+
+    static Vector2 PlanarFallbackUv(Vector3 localPoint, Vector3 inwardNormal, Bounds bounds)
+    {
+        Vector3 abs = new Vector3(Mathf.Abs(inwardNormal.x), Mathf.Abs(inwardNormal.y), Mathf.Abs(inwardNormal.z));
+        if (abs.y >= abs.x && abs.y >= abs.z)
+            return new Vector2(
+                Mathf.InverseLerp(bounds.min.x, bounds.max.x, localPoint.x),
+                Mathf.InverseLerp(bounds.min.z, bounds.max.z, localPoint.z));
+        if (abs.x >= abs.z)
+            return new Vector2(
+                Mathf.InverseLerp(bounds.min.z, bounds.max.z, localPoint.z),
+                Mathf.InverseLerp(bounds.min.y, bounds.max.y, localPoint.y));
+        return new Vector2(
+            Mathf.InverseLerp(bounds.min.x, bounds.max.x, localPoint.x),
+            Mathf.InverseLerp(bounds.min.y, bounds.max.y, localPoint.y));
     }
 
     /// <summary>

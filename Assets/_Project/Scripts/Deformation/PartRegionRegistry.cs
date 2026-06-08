@@ -17,7 +17,7 @@ public static class PartRegionRegistry
             if (part.PartType == VehiclePartType.Wheel || part.PartType == VehiclePartType.OtherNonDeformable)
                 continue;
 
-            float dist = Vector3.Distance(part.transform.position, worldPoint);
+            float dist = GetClosestSurfaceDistance(part, worldPoint);
             if (dist < bestDist)
             {
                 bestDist = dist;
@@ -26,6 +26,22 @@ public static class PartRegionRegistry
         }
 
         return closest;
+    }
+
+    static float GetClosestSurfaceDistance(DeformablePart part, Vector3 worldPoint)
+    {
+        if (part == null)
+            return float.MaxValue;
+
+        BoxCollider box = part.SyncCollider;
+        if (box != null)
+            return Vector3.Distance(box.ClosestPoint(worldPoint), worldPoint);
+
+        MeshRenderer renderer = part.GetComponent<MeshRenderer>();
+        if (renderer != null)
+            return Vector3.Distance(renderer.bounds.ClosestPoint(worldPoint), worldPoint);
+
+        return Vector3.Distance(part.transform.position, worldPoint);
     }
 
     public static VehiclePartType GuessPartFromName(string objectName)
