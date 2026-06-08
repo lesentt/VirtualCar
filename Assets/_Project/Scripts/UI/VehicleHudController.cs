@@ -201,7 +201,7 @@ public class VehicleHudController : MonoBehaviour
         GameObject left = new GameObject("SpeedLeft", typeof(RectTransform), typeof(VerticalLayoutGroup), typeof(LayoutElement));
         left.transform.SetParent(row.transform, false);
         VerticalLayoutGroup leftLayout = left.GetComponent<VerticalLayoutGroup>();
-        leftLayout.spacing = -2f;
+        leftLayout.spacing = 0f;
         leftLayout.childAlignment = TextAnchor.LowerLeft;
         leftLayout.childControlWidth = true;
         leftLayout.childControlHeight = true;
@@ -209,8 +209,11 @@ public class VehicleHudController : MonoBehaviour
         leftLayout.childForceExpandHeight = false;
         SetFlexible(left, 1f, 0f);
 
-        speedText = CreateRowText(left.transform, "SpeedValue", "0", 44, TextAnchor.MiddleLeft, TextPrimary);
-        SetFlexible(speedText.gameObject, 1f, 0f);
+        const int speedFontSize = 44;
+        const float speedRowHeight = 56f;
+        speedText = CreateRowText(left.transform, "SpeedValue", "0", speedFontSize, TextAnchor.MiddleLeft, TextPrimary);
+        speedText.verticalOverflow = VerticalWrapMode.Overflow;
+        SetFlexible(speedText.gameObject, 1f, speedRowHeight);
         CreateRowText(left.transform, "SpeedUnit", "km/h", 12, TextAnchor.MiddleLeft, TextMuted);
 
         GameObject badge = CreateFixedImage(row.transform, "GearBadge", AccentCyan, 48f, 48f);
@@ -391,7 +394,8 @@ public class VehicleHudController : MonoBehaviour
     {
         GameObject obj = new GameObject(name, typeof(RectTransform), typeof(Text), typeof(LayoutElement));
         obj.transform.SetParent(parent, false);
-        SetFixed(obj, 0f, fontSize + 4f);
+        float rowHeight = Mathf.Ceil(fontSize * 1.25f);
+        SetFixed(obj, 0f, rowHeight);
 
         Text text = obj.GetComponent<Text>();
         text.font = uiFont;
