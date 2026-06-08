@@ -4,7 +4,6 @@ Shader "VirtualVehicle/VehicleBodyWear"
     {
         _Color ("Color", Color) = (1,1,1,1)
         _MainTex ("Paint Albedo", 2D) = "white" {}
-        _WearMask ("Wear Mask", 2D) = "black" {}
         _WearMetalTex ("Wear Metal", 2D) = "gray" {}
         _WearMetalNormal ("Wear Normal", 2D) = "bump" {}
         _WearMetalRough ("Wear Roughness", 2D) = "white" {}
@@ -21,14 +20,18 @@ Shader "VirtualVehicle/VehicleBodyWear"
         LOD 200
 
         CGPROGRAM
-        #pragma surface surf Standard fullforwardshadows
+        #pragma surface surf Standard fullforwardshadows vertex:vert
         #pragma target 3.0
 
+        #define MAX_WEAR_STAMPS 32
+
         sampler2D _MainTex;
-        sampler2D _WearMask;
         sampler2D _WearMetalTex;
         sampler2D _WearMetalNormal;
         sampler2D _WearMetalRough;
+
+        float4 _WearStamps[MAX_WEAR_STAMPS];
+        float _WearStrengths[MAX_WEAR_STAMPS];
 
         fixed4 _Color;
         half _WearTiling;
@@ -40,12 +43,37 @@ Shader "VirtualVehicle/VehicleBodyWear"
         struct Input
         {
             float2 uv_MainTex;
+            float3 localPos;
         };
+
+        void vert(inout appdata_full v, out Input o)
+        {
+            UNITY_INITIALIZE_OUTPUT(Input, o);
+            o.localPos = v.vertex.xyz;
+        }
+
+        half ComputeLocalWear(float3 localPos)
+        {
+            half wear = 0;
+
+            for (int i = 0; i < MAX_WEAR_STAMPS; i++)
+            {
+                float4 stamp = _WearStamps[i];
+                if (stamp.w <= 0.0001)
+                    continue;
+
+                float dist = distance(localPos, stamp.xyz);
+                half falloff = 1.0h - saturate(dist / stamp.w);
+                wear = max(wear, falloff * falloff * _WearStrengths[i]);
+            }
+
+            return wear;
+        }
 
         void surf(Input IN, inout SurfaceOutputStandard o)
         {
             fixed4 paint = tex2D(_MainTex, IN.uv_MainTex) * _Color;
-            half wear = tex2D(_WearMask, IN.uv_MainTex).r;
+            half wear = ComputeLocalWear(IN.localPos);
             half wearCurve = saturate(pow(wear, 0.85) * _WearBlendPower);
 
             float2 metalUv = IN.uv_MainTex * _WearTiling;

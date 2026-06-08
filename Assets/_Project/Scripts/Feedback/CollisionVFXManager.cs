@@ -39,13 +39,10 @@ public class CollisionVFXManager : MonoBehaviour
         if (vehicleRoot == null)
             return;
 
-        if (evt.Impulse >= profile.minImpulseForHeavyVFX)
-            SpawnImpactEffect(profile.firePrefab, evt.ContactPoint, evt.ContactNormal, profile.fireLifetime);
-        else
-            SpawnImpactEffect(profile.smokePrefab, evt.ContactPoint, evt.ContactNormal, profile.smokeLifetime);
+        SpawnImpactVfx(evt);
 
         VehicleState state = vehicleRoot.GetComponent<VehicleState>();
-        if (state != null && state.GetDamagePercentApprox() >= profile.bigFireDamagePercent)
+        if (state != null && state.GetDamagePercentApprox() > profile.bigFireDamagePercent)
             TryAttachBigFire(state, vehicleRoot);
     }
 
@@ -56,6 +53,23 @@ public class CollisionVFXManager : MonoBehaviour
 
         Destroy(fire);
         vehicleBigFires.Remove(state);
+    }
+
+    void SpawnImpactVfx(CollisionEventData evt)
+    {
+        if (evt.Impulse >= profile.minImpulseForImpactBigFire)
+        {
+            SpawnImpactEffect(profile.bigFirePrefab, evt.ContactPoint, evt.ContactNormal, profile.impactBigFireLifetime);
+            return;
+        }
+
+        if (evt.Impulse >= profile.minImpulseForFire)
+        {
+            SpawnImpactEffect(profile.firePrefab, evt.ContactPoint, evt.ContactNormal, profile.fireLifetime);
+            return;
+        }
+
+        SpawnImpactEffect(profile.smokePrefab, evt.ContactPoint, evt.ContactNormal, profile.smokeLifetime);
     }
 
     void SpawnImpactEffect(GameObject prefab, Vector3 position, Vector3 normal, float lifetime)

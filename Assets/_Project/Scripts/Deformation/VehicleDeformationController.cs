@@ -74,7 +74,7 @@ public class VehicleDeformationController : MonoBehaviour
         if (profile == null)
             return;
 
-        if (!wear.IsReady && !wear.Initialize(root, profile, cfg.wearMaskResolution))
+        if (!wear.IsReady && !wear.Initialize(root, profile, cfg.maxWearStamps))
             return;
 
         wear.ApplyImpact(evt.ContactPoint, evt.Impulse, cfg);

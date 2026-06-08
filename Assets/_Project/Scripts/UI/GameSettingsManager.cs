@@ -54,6 +54,7 @@ public class GameSettingsManager : MonoBehaviour
 
         CaptureDefaultsFromScene();
         LoadFromPlayerPrefs();
+        settings.NormalizeVfxSettings();
         ApplyAll();
     }
 
@@ -166,7 +167,7 @@ public class GameSettingsManager : MonoBehaviour
         {
             vfxManager.SetEnabled(settings.vfxEnabled);
             if (vfxManager.Profile != null)
-                vfxManager.Profile.minImpulseForVFX = settings.vfxMinImpulse;
+                settings.ApplyVfx(vfxManager.Profile);
         }
     }
 

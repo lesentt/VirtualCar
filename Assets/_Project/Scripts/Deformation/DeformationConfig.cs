@@ -25,8 +25,9 @@ public class DeformationConfig : ScriptableObject
     public float wearThreshold = 300f;
     public float wearImpulseScale = 0.00032f;
     public float wearStrengthMin = 0.28f;
-    public int wearMaskResolution = 512;
-    public float wearStampRadius = 0.18f;
+    public int maxWearStamps = 32;
+    [Tooltip("做旧半径 = 部件形变半径 × 此系数")]
+    public float wearStampRadius = 0.42f;
 
     public PartDeformOverride[] partOverrides;
 

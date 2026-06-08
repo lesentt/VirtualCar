@@ -73,8 +73,8 @@ public static class CollisionSystemAssetSetup
         config.wearThreshold = 300f;
         config.wearImpulseScale = 0.00032f;
         config.wearStrengthMin = 0.28f;
-        config.wearMaskResolution = 512;
-        config.wearStampRadius = 0.18f;
+        config.maxWearStamps = 32;
+        config.wearStampRadius = 0.42f;
         config.partOverrides = new[]
         {
             new PartDeformOverride { part = VehiclePartType.FrontBumper, maxDepth = 0.45f, radius = 1.1f },

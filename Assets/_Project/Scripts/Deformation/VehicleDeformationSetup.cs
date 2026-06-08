@@ -70,7 +70,7 @@ public static class VehicleDeformationSetup
             VehicleWearProfile wearProfile = CollisionConfigProvider.WearProfile;
             DeformationConfig deformConfig = CollisionConfigProvider.GetDeformationConfig();
             if (wear != null && wearProfile != null && deformConfig != null && deformConfig.enableWear)
-                wear.Initialize(vehicleRoot, wearProfile, deformConfig.wearMaskResolution);
+                wear.Initialize(vehicleRoot, wearProfile, deformConfig.maxWearStamps);
         }
     }
 

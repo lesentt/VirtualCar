@@ -29,8 +29,8 @@ MonoBehaviour:
   wearThreshold: 300
   wearImpulseScale: 0.00032
   wearStrengthMin: 0.28
-  wearMaskResolution: 512
-  wearStampRadius: 0.18
+  maxWearStamps: 32
+  wearStampRadius: 0.42
   partOverrides:
   - part: 0
     maxDepth: 0.45

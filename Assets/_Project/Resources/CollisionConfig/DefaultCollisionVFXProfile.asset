@@ -16,8 +16,10 @@ MonoBehaviour:
   firePrefab: {fileID: 1582275357731197809, guid: 5334360cd0cfad84bbf6855beaf10de4, type: 3}
   bigFirePrefab: {fileID: 2670923554171423535, guid: 56f02590ce7db2347803864c84dd78d3, type: 3}
   minImpulseForVFX: 300
-  minImpulseForHeavyVFX: 15000
-  bigFireDamagePercent: 60
+  minImpulseForFire: 4000
+  minImpulseForImpactBigFire: 10000
+  bigFireDamagePercent: 50
   smokeLifetime: 4
   fireLifetime: 5
+  impactBigFireLifetime: 6
   bigFireLocalOffset: {x: 0, y: 1.1, z: 0.3}

@@ -47,6 +47,9 @@ public class RuntimeGameSettings
     public float audioHeavyThreshold = 4000f;
     public bool vfxEnabled = true;
     public float vfxMinImpulse = 300f;
+    public float vfxFireImpulse = 4000f;
+    public float vfxImpactBigFireImpulse = 10000f;
+    public float vfxBodyBigFireDamagePercent = 50f;
 
     [Header("环境")]
     public float propToppleThresholdScale = 1f;
@@ -136,8 +139,36 @@ public class RuntimeGameSettings
         {
             vfxEnabled = vfx.IsEnabled();
             if (vfx.Profile != null)
+            {
                 vfxMinImpulse = vfx.Profile.minImpulseForVFX;
+                vfxFireImpulse = vfx.Profile.minImpulseForFire;
+                vfxImpactBigFireImpulse = vfx.Profile.minImpulseForImpactBigFire;
+                vfxBodyBigFireDamagePercent = vfx.Profile.bigFireDamagePercent;
+            }
         }
+    }
+
+    public void ApplyVfx(CollisionVFXProfile profile)
+    {
+        if (profile == null)
+            return;
+
+        profile.minImpulseForVFX = vfxMinImpulse;
+        profile.minImpulseForFire = Mathf.Max(vfxFireImpulse, vfxMinImpulse + 1f);
+        profile.minImpulseForImpactBigFire = Mathf.Max(vfxImpactBigFireImpulse, profile.minImpulseForFire + 1f);
+        profile.bigFireDamagePercent = Mathf.Clamp(vfxBodyBigFireDamagePercent, 1f, 99f);
+    }
+
+    public void NormalizeVfxSettings()
+    {
+        if (vfxMinImpulse <= 0f)
+            vfxMinImpulse = 300f;
+        if (vfxFireImpulse <= vfxMinImpulse)
+            vfxFireImpulse = 4000f;
+        if (vfxImpactBigFireImpulse <= vfxFireImpulse)
+            vfxImpactBigFireImpulse = 10000f;
+        if (vfxBodyBigFireDamagePercent <= 0f)
+            vfxBodyBigFireDamagePercent = 50f;
     }
 
     public void CaptureCollision(CollisionManager manager, CollisionEntityProfile entityProfile)

@@ -1,30 +1,44 @@
+using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Rendering;
 
 [DisallowMultipleComponent]
 [RequireComponent(typeof(DeformablePart))]
 public class PartWearApplicator : MonoBehaviour
 {
-    static readonly int WearMaskId = Shader.PropertyToID("_WearMask");
-    static Material stampMaterial;
+    const int ShaderStampCapacity = 32;
+
+    static readonly int WearStampsId = Shader.PropertyToID("_WearStamps");
+    static readonly int WearStrengthsId = Shader.PropertyToID("_WearStrengths");
+
+    readonly List<WearStamp> stamps = new List<WearStamp>(ShaderStampCapacity);
+    readonly Vector4[] stampVectors = new Vector4[ShaderStampCapacity];
+    readonly float[] stampStrengths = new float[ShaderStampCapacity];
+
+    struct WearStamp
+    {
+        public Vector3 LocalPos;
+        public float Radius;
+        public float Strength;
+    }
 
     DeformablePart deformablePart;
     MeshRenderer meshRenderer;
-    RenderTexture wearMask;
     Material[] originalMaterials;
     Material[] wearMaterials;
+    int maxStamps = ShaderStampCapacity;
     bool initialized;
 
     public bool IsReady => initialized;
-    public RenderTexture WearMask => wearMask;
 
-    public bool Initialize(GameObject vehicleRoot, VehicleWearProfile profile, int maskResolution)
+    public bool Initialize(GameObject vehicleRoot, VehicleWearProfile profile, int stampCapacity)
     {
         if (initialized)
             return true;
 
         if (!Application.isPlaying)
             return false;
+
+        maxStamps = Mathf.Clamp(stampCapacity, 4, ShaderStampCapacity);
 
         deformablePart = GetComponent<DeformablePart>();
         meshRenderer = GetComponent<MeshRenderer>();
@@ -41,19 +55,7 @@ public class PartWearApplicator : MonoBehaviour
             return false;
         }
 
-        EnsureStampMaterial();
-
-        wearMask = new RenderTexture(maskResolution, maskResolution, 0, RenderTextureFormat.R8)
-        {
-            name = $"{name}_WearMask",
-            wrapMode = TextureWrapMode.Clamp,
-            filterMode = FilterMode.Bilinear,
-            useMipMap = false,
-            autoGenerateMips = false
-        };
-        wearMask.Create();
-        ClearWearMask();
-
+        stamps.Clear();
         originalMaterials = meshRenderer.sharedMaterials;
         wearMaterials = new Material[originalMaterials.Length];
 
@@ -72,18 +74,18 @@ public class PartWearApplicator : MonoBehaviour
             };
             CopyPaintProperties(source, wearMat);
             ApplyProfileTextures(wearMat, profile);
-            wearMat.SetTexture(WearMaskId, wearMask);
             wearMaterials[i] = wearMat;
         }
 
         meshRenderer.materials = wearMaterials;
+        ApplyStampsToMaterials();
         initialized = true;
         return true;
     }
 
     public void ApplyImpact(Vector3 worldContact, float impulse, DeformationConfig config)
     {
-        if (!initialized || wearMask == null || config == null || impulse < config.wearThreshold)
+        if (!initialized || config == null || impulse < config.wearThreshold)
             return;
 
         Transform partTransform = deformablePart.meshFilter != null
@@ -91,17 +93,16 @@ public class PartWearApplicator : MonoBehaviour
             : transform;
 
         Vector3 localHit = partTransform.InverseTransformPoint(worldContact);
-        if (!deformablePart.TryGetImpactSurface(localHit, out _, out _, out Vector2 uv, 2f)
-            && !deformablePart.TryGetNearestUv(localHit, out uv, 2f))
-            return;
+        if (deformablePart.TryGetImpactSurface(localHit, out Vector3 surfaceHit, out _, out _, 2f))
+            localHit = surfaceHit;
 
         config.GetPartSettings(deformablePart.PartType, out _, out float deformRadius);
         float radiusScale = deformRadius > 0f ? deformRadius / config.deformRadius : 1f;
         float strength = impulse * config.wearImpulseScale * radiusScale;
         strength = Mathf.Clamp(Mathf.Max(strength, config.wearStrengthMin), 0f, 1f);
-        float stampRadius = config.wearStampRadius * Mathf.Lerp(0.85f, 1.45f, strength);
+        float radiusMeters = deformRadius * config.wearStampRadius * Mathf.Lerp(0.85f, 1.45f, strength);
 
-        StampWearMask(uv, stampRadius, strength);
+        AddStamp(localHit, radiusMeters, strength);
     }
 
     public void ResetWear()
@@ -115,24 +116,17 @@ public class PartWearApplicator : MonoBehaviour
             meshRenderer.sharedMaterials = originalMaterials;
 
         DestroyWearMaterials();
-
-        if (wearMask != null)
-        {
-            wearMask.Release();
-            Destroy(wearMask);
-            wearMask = null;
-        }
-
         originalMaterials = null;
         initialized = false;
     }
 
     public void ClearWear()
     {
-        if (!initialized || wearMask == null)
+        if (!initialized)
             return;
 
-        ClearWearMask();
+        stamps.Clear();
+        ApplyStampsToMaterials();
     }
 
     void OnDestroy()
@@ -141,11 +135,65 @@ public class PartWearApplicator : MonoBehaviour
             return;
 
         DestroyWearMaterials();
+    }
 
-        if (wearMask != null)
+    void AddStamp(Vector3 localPos, float radius, float strength)
+    {
+        for (int i = 0; i < stamps.Count; i++)
         {
-            wearMask.Release();
-            Destroy(wearMask);
+            WearStamp existing = stamps[i];
+            if (Vector3.Distance(existing.LocalPos, localPos) > radius * 0.35f)
+                continue;
+
+            existing.LocalPos = Vector3.Lerp(existing.LocalPos, localPos, 0.45f);
+            existing.Radius = Mathf.Max(existing.Radius, radius);
+            existing.Strength = Mathf.Max(existing.Strength, strength);
+            stamps[i] = existing;
+            ApplyStampsToMaterials();
+            return;
+        }
+
+        if (stamps.Count >= maxStamps)
+            stamps.RemoveAt(0);
+
+        stamps.Add(new WearStamp
+        {
+            LocalPos = localPos,
+            Radius = radius,
+            Strength = strength
+        });
+
+        ApplyStampsToMaterials();
+    }
+
+    void ApplyStampsToMaterials()
+    {
+        if (wearMaterials == null)
+            return;
+
+        for (int i = 0; i < ShaderStampCapacity; i++)
+        {
+            if (i < stamps.Count)
+            {
+                WearStamp stamp = stamps[i];
+                stampVectors[i] = new Vector4(stamp.LocalPos.x, stamp.LocalPos.y, stamp.LocalPos.z, stamp.Radius);
+                stampStrengths[i] = stamp.Strength;
+            }
+            else
+            {
+                stampVectors[i] = Vector4.zero;
+                stampStrengths[i] = 0f;
+            }
+        }
+
+        for (int i = 0; i < wearMaterials.Length; i++)
+        {
+            Material mat = wearMaterials[i];
+            if (mat == null || originalMaterials != null && mat == originalMaterials[i])
+                continue;
+
+            mat.SetVectorArray(WearStampsId, stampVectors);
+            mat.SetFloatArray(WearStrengthsId, stampStrengths);
         }
     }
 
@@ -163,43 +211,6 @@ public class PartWearApplicator : MonoBehaviour
         }
 
         wearMaterials = null;
-    }
-
-    void StampWearMask(Vector2 uv, float radius, float strength)
-    {
-        EnsureStampMaterial();
-        stampMaterial.SetVector("_StampUv", new Vector4(uv.x, uv.y, 0f, 0f));
-        stampMaterial.SetFloat("_StampRadius", radius);
-        stampMaterial.SetFloat("_Strength", strength);
-
-        RenderTexture temp = RenderTexture.GetTemporary(
-            wearMask.width, wearMask.height, 0, wearMask.format);
-        Graphics.Blit(wearMask, temp, stampMaterial);
-        Graphics.Blit(temp, wearMask);
-        RenderTexture.ReleaseTemporary(temp);
-    }
-
-    void ClearWearMask()
-    {
-        RenderTexture previous = RenderTexture.active;
-        RenderTexture.active = wearMask;
-        GL.Clear(false, true, Color.black);
-        RenderTexture.active = previous;
-    }
-
-    static void EnsureStampMaterial()
-    {
-        if (stampMaterial != null)
-            return;
-
-        Shader stampShader = Shader.Find("Hidden/VirtualVehicle/WearMaskStamp");
-        if (stampShader == null)
-        {
-            Debug.LogError("[PartWearApplicator] 找不到 WearMaskStamp Shader。");
-            return;
-        }
-
-        stampMaterial = new Material(stampShader);
     }
 
     static bool ShouldApplyWear(Material mat)

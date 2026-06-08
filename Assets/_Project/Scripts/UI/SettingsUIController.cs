@@ -521,6 +521,16 @@ public class SettingsUIController : MonoBehaviour
         AddSliderRow(parent, "粒子最小冲量", 50f, 2000f, false, "F0",
             () => settingsManager.Settings.vfxMinImpulse,
             v => settingsManager.Settings.vfxMinImpulse = v);
+        AddSliderRow(parent, "烟雾→火焰冲量", 500f, 15000f, false, "F0",
+            () => settingsManager.Settings.vfxFireImpulse,
+            v => settingsManager.Settings.vfxFireImpulse = v);
+        AddSliderRow(parent, "火焰→大火冲量", 2000f, 30000f, false, "F0",
+            () => settingsManager.Settings.vfxImpactBigFireImpulse,
+            v => settingsManager.Settings.vfxImpactBigFireImpulse = v);
+        AddSliderRow(parent, "车身大火损伤 (%)", 10f, 90f, false, "F0",
+            () => settingsManager.Settings.vfxBodyBigFireDamagePercent,
+            v => settingsManager.Settings.vfxBodyBigFireDamagePercent = v);
+        AddHintRow(parent, "轻撞：烟雾；≥ 火焰冲量：fire；≥ 大火冲量：撞击点 big fire；损伤超过阈值：车身持续 big fire。");
     }
 
     void BuildEnvironmentTab(Transform parent)
