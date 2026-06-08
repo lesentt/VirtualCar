@@ -225,6 +225,17 @@ public class GameSettingsManager : MonoBehaviour
         ApplyAll();
     }
 
+    public void ResetActiveVehicle()
+    {
+        sceneResetService?.ResetActiveVehicle(GetActiveCar());
+        ApplyAll();
+    }
+
+    public void UnstuckActiveVehicle()
+    {
+        sceneResetService?.UnstuckVehicle(GetActiveCar());
+    }
+
     public void SaveToPlayerPrefs()
     {
         string json = JsonUtility.ToJson(settings);

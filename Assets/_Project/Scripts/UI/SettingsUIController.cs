@@ -316,9 +316,13 @@ public class SettingsUIController : MonoBehaviour
             new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(-48f, 12f), new Vector2(96f, 30f));
         saveBtn.onClick.AddListener(() => settingsManager.SaveToPlayerPrefs());
 
-        Button sceneBtn = CreateOutlineButton(parent, "ResetScene", "重置场景",
-            new Vector2(1f, 0f), new Vector2(1f, 0f), new Vector2(-20f, 12f), new Vector2(96f, 30f));
-        sceneBtn.onClick.AddListener(() => settingsManager.ResetScene());
+        Button resetVehicleBtn = CreateOutlineButton(parent, "ResetVehicle", "重置车辆",
+            new Vector2(1f, 0f), new Vector2(1f, 0f), new Vector2(-116f, 12f), new Vector2(88f, 30f));
+        resetVehicleBtn.onClick.AddListener(() => settingsManager.ResetActiveVehicle());
+
+        Button unstuckBtn = CreateOutlineButton(parent, "UnstuckVehicle", "防卡死",
+            new Vector2(1f, 0f), new Vector2(1f, 0f), new Vector2(-20f, 12f), new Vector2(88f, 30f));
+        unstuckBtn.onClick.AddListener(() => settingsManager.UnstuckActiveVehicle());
 
         tooltipText = CreateText(parent, "TooltipText", SettingsDescriptions.DefaultHint, 12, TextAnchor.UpperLeft,
             new Vector2(0f, 0f), new Vector2(1f, 0f), new Vector2(20f, 68f), new Vector2(-20f, 52f));
