@@ -5,27 +5,37 @@ public class CameraShakeController : MonoBehaviour
 {
     [SerializeField] float minImpulse = 1500f;
     [SerializeField] float maxShakeAmplitude = 0.4f;
+    [SerializeField] float firstPersonRotShakeScale = 10f;
     [SerializeField] VehicleCameraController cameraController;
 
     bool shakeEnabled = true;
     Coroutine shakeRoutine;
+    Transform activeShakeTransform;
+
+    public static CameraShakeController Instance { get; private set; }
 
     void Awake()
     {
+        Instance = this;
         if (cameraController == null)
             cameraController = FindObjectOfType<VehicleCameraController>();
+    }
+
+    void OnDestroy()
+    {
+        if (Instance == this)
+            Instance = null;
+
+        if (CollisionManager.Instance?.EventChannel != null)
+            CollisionManager.Instance.EventChannel.OnCollision.RemoveListener(OnCollision);
+
+        StopAndReset();
     }
 
     void Start()
     {
         if (CollisionManager.Instance?.EventChannel != null)
             CollisionManager.Instance.EventChannel.OnCollision.AddListener(OnCollision);
-    }
-
-    void OnDestroy()
-    {
-        if (CollisionManager.Instance?.EventChannel != null)
-            CollisionManager.Instance.EventChannel.OnCollision.RemoveListener(OnCollision);
     }
 
     public void OnCollision(CollisionEventData evt)
@@ -38,9 +48,80 @@ public class CameraShakeController : MonoBehaviour
             return;
 
         float strength = Mathf.InverseLerp(minImpulse, 8000f, evt.Impulse);
+        BeginShake(strength * maxShakeAmplitude, 0.2f);
+    }
+
+    public void StopAndReset()
+    {
         if (shakeRoutine != null)
+        {
             StopCoroutine(shakeRoutine);
-        shakeRoutine = StartCoroutine(Shake(strength * maxShakeAmplitude, 0.2f));
+            shakeRoutine = null;
+        }
+
+        ResetShakenTransform();
+        activeShakeTransform = null;
+    }
+
+    void BeginShake(float amplitude, float duration)
+    {
+        StopAndReset();
+        shakeRoutine = StartCoroutine(ShakeRoutine(amplitude, duration));
+    }
+
+    IEnumerator ShakeRoutine(float amplitude, float duration)
+    {
+        activeShakeTransform = cameraController != null
+            ? cameraController.GetActiveCameraTransform()
+            : Camera.main?.transform;
+
+        if (activeShakeTransform == null)
+        {
+            shakeRoutine = null;
+            yield break;
+        }
+
+        bool firstPerson = cameraController != null
+            && cameraController.CurrentViewMode == VehicleCameraRig.ViewMode.FirstPerson;
+
+        ResetShakenTransform();
+
+        float elapsed = 0f;
+        while (elapsed < duration)
+        {
+            elapsed += Time.deltaTime;
+            float decay = 1f - elapsed / duration;
+
+            if (firstPerson)
+            {
+                activeShakeTransform.localPosition = Vector3.zero;
+                float rot = amplitude * decay * firstPersonRotShakeScale;
+                activeShakeTransform.localRotation = Quaternion.Euler(
+                    Random.Range(-rot, rot),
+                    Random.Range(-rot, rot),
+                    Random.Range(-rot, rot) * 0.35f);
+            }
+            else
+            {
+                activeShakeTransform.localRotation = Quaternion.identity;
+                activeShakeTransform.localPosition = Random.insideUnitSphere * amplitude * decay;
+            }
+
+            yield return null;
+        }
+
+        ResetShakenTransform();
+        activeShakeTransform = null;
+        shakeRoutine = null;
+    }
+
+    void ResetShakenTransform()
+    {
+        if (activeShakeTransform == null)
+            return;
+
+        activeShakeTransform.localPosition = Vector3.zero;
+        activeShakeTransform.localRotation = Quaternion.identity;
     }
 
     CarController FindActivePlayerCar()
@@ -52,30 +133,6 @@ public class CameraShakeController : MonoBehaviour
         }
 
         return null;
-    }
-
-    IEnumerator Shake(float amplitude, float duration)
-    {
-        Transform camTransform = cameraController != null
-            ? cameraController.transform
-            : Camera.main?.transform;
-
-        if (camTransform == null)
-            yield break;
-
-        Vector3 originalLocalPos = camTransform.localPosition;
-        float elapsed = 0f;
-
-        while (elapsed < duration)
-        {
-            elapsed += Time.deltaTime;
-            float decay = 1f - elapsed / duration;
-            camTransform.localPosition = originalLocalPos + Random.insideUnitSphere * amplitude * decay;
-            yield return null;
-        }
-
-        camTransform.localPosition = originalLocalPos;
-        shakeRoutine = null;
     }
 
     public bool IsEnabled() => shakeEnabled;

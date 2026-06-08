@@ -203,8 +203,13 @@ public class GameUIManager : MonoBehaviour
             ? recorder.LastEvent.Impulse
             : state != null ? state.LastImpulse : 0f;
 
+        string viewLabel = cameraController != null
+            && cameraController.CurrentViewMode == VehicleCameraRig.ViewMode.FirstPerson
+            ? " · 驾驶室"
+            : string.Empty;
+
         hudController.Refresh(
-            GetVehicleDisplayName(activeIndex),
+            GetVehicleDisplayName(activeIndex) + viewLabel,
             car.GetSpeed(),
             car.GetGear(),
             car.GetThrottleInput(),

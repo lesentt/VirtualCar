@@ -42,8 +42,8 @@ public static class DriveableVehicleBuilder
         airDragCoefficient = 0.85f,
         damageSensitivity = 0.16f,
         centerOfMassY = -10f,
-        wheelMeshFl = "TS_WheelFL",
-        wheelMeshFr = "TS_WheelFR",
+        wheelMeshFl = "T_WheelFL",
+        wheelMeshFr = "T_WheelFR",
         wheelMeshRl = "",
         wheelMeshRr = "",
         wheelFl = new Vector3(-0.689f, 0.15f, 1.47f),
@@ -95,7 +95,7 @@ public static class DriveableVehicleBuilder
         car.airDragCoefficient = profile.airDragCoefficient;
         car.isPlayerControlled = false;
 
-        EnsureVehicleCamera(root.transform);
+        VehicleCameraRig.EnsureOn(root.transform);
 
         VehicleState state = root.GetComponent<VehicleState>();
         if (state == null)
@@ -188,24 +188,6 @@ public static class DriveableVehicleBuilder
         mesh.position = worldPos;
         mesh.rotation = worldRot;
         return mesh;
-    }
-
-    static void EnsureVehicleCamera(Transform root)
-    {
-        Camera existing = root.GetComponentInChildren<Camera>(true);
-        if (existing != null)
-            return;
-
-        GameObject cameraGo = new GameObject("Camera");
-        cameraGo.transform.SetParent(root, false);
-        cameraGo.transform.localPosition = new Vector3(0.12f, 2.79f, -4.25f);
-        cameraGo.transform.localRotation = Quaternion.Euler(20.412f, 0f, 0f);
-
-        Camera cam = cameraGo.AddComponent<Camera>();
-        cam.fieldOfView = 60f;
-        cam.nearClipPlane = 0.3f;
-        cam.farClipPlane = 1000f;
-        cameraGo.AddComponent<AudioListener>();
     }
 
     static Transform FindChildRecursive(Transform parent, string name)

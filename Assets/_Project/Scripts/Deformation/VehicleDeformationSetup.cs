@@ -27,7 +27,13 @@ public static class VehicleDeformationSetup
         new PartDef { objectName = "PDoor_FR", partType = VehiclePartType.DoorFR },
         new PartDef { objectName = "PDoor_BL", partType = VehiclePartType.DoorRL },
         new PartDef { objectName = "PDoor_BR", partType = VehiclePartType.DoorRR },
-        new PartDef { objectName = "Taxi_S", partType = VehiclePartType.FrontBumper },
+        new PartDef { objectName = "Taxi_base", partType = VehiclePartType.FrontBumper },
+        new PartDef { objectName = "Taxi_Hood", partType = VehiclePartType.Hood },
+        new PartDef { objectName = "Taxi_trunk", partType = VehiclePartType.Trunk },
+        new PartDef { objectName = "TDoor_FL", partType = VehiclePartType.DoorFL },
+        new PartDef { objectName = "TDoor_FR", partType = VehiclePartType.DoorFR },
+        new PartDef { objectName = "TDoor_BL", partType = VehiclePartType.DoorRL },
+        new PartDef { objectName = "TDoor_BR", partType = VehiclePartType.DoorRR },
     };
 
     public static void SetupAllVehicles()

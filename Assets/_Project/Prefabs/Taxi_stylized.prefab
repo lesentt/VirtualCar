@@ -1,5 +1,37 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
+--- !u!1 &997743308687581778
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2457725363000364160}
+  m_Layer: 0
+  m_Name: ThirdPersonAnchor
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2457725363000364160
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 997743308687581778}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0.17718782, y: 0, z: 0, w: 0.9841771}
+  m_LocalPosition: {x: 0.12, y: 2.79, z: -4.25}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 654327741020622787}
+  m_Father: {fileID: 6297959221204343475}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1636043848937250196
 GameObject:
   m_ObjectHideFlags: 0
@@ -418,12 +450,12 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4966109209018561130}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.17718782, y: 0, z: 0, w: 0.9841771}
-  m_LocalPosition: {x: 0.12, y: 2.79, z: -4.25}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 4896804360661022550}
+  m_Father: {fileID: 2457725363000364160}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!20 &509264875882167454
 Camera:
@@ -499,6 +531,7 @@ GameObject:
   - component: {fileID: 2957676967821317054}
   - component: {fileID: 5515838056758357652}
   - component: {fileID: 9000760440020481582}
+  - component: {fileID: 3491651618590948247}
   m_Layer: 8
   m_Name: Taxi_stylized
   m_TagString: Untagged
@@ -523,7 +556,7 @@ Transform:
   - {fileID: 5365464470006218333}
   - {fileID: 1764383802691180424}
   - {fileID: 2042995651835694418}
-  - {fileID: 654327741020622787}
+  - {fileID: 6297959221204343475}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!54 &6744220812190222236
@@ -642,6 +675,27 @@ MonoBehaviour:
   brakeVolume: 0.45
   stopSpeedKmh: 0.8
   hornKey: 104
+--- !u!114 &3491651618590948247
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5241944997321305580}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bab5c135bca5446479fb15d2049baa55, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  thirdPersonAnchor: {fileID: 2457725363000364160}
+  cockpitAnchor: {fileID: 139779551305214640}
+  vehicleCamera: {fileID: 509264875882167454}
+  cockpitLocalPosition: {x: -0.38, y: 1.08, z: 0.35}
+  cockpitLocalEuler: {x: 0, y: 0, z: 0}
+  thirdPersonFov: 60
+  cockpitFov: 72
+  thirdPersonNearClip: 0.3
+  cockpitNearClip: 0.08
 --- !u!1 &5418960047159234607
 GameObject:
   m_ObjectHideFlags: 0
@@ -725,6 +779,39 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!1 &6696740604181868534
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 6297959221204343475}
+  m_Layer: 0
+  m_Name: CameraRig
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &6297959221204343475
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6696740604181868534}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 2457725363000364160}
+  - {fileID: 139779551305214640}
+  m_Father: {fileID: 4896804360661022550}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &6928158029844288518
 GameObject:
   m_ObjectHideFlags: 0
@@ -950,6 +1037,37 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!1 &8761808402815145218
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 139779551305214640}
+  m_Layer: 0
+  m_Name: CockpitAnchor
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &139779551305214640
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8761808402815145218}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -0.37769988, y: 1.3054014, z: 0.40486208}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 6297959221204343475}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &8901042264781089568
 GameObject:
   m_ObjectHideFlags: 0

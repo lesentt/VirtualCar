@@ -652,12 +652,12 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1763105477984587934}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.17718846, y: -0.000000022351736, z: 0.000000016880218, w: 0.98417693}
-  m_LocalPosition: {x: 0.12000048, y: 2.79, z: -4.2500033}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 5133337589519397662}
+  m_Father: {fileID: 7081235370316605551}
   m_LocalEulerAnglesHint: {x: 20.412, y: 0, z: 0}
 --- !u!20 &7307513882035108091
 Camera:
@@ -841,6 +841,39 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 0.5085322, y: 1.0873652, z: 1.2371345}
   m_Center: {x: 0.08785578, y: 0.23063093, z: -0.6185672}
+--- !u!1 &2663792131211854640
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 3198503425834986550}
+  m_Layer: 0
+  m_Name: CameraRig
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &3198503425834986550
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2663792131211854640}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 7081235370316605551}
+  - {fileID: 6514206233570354045}
+  m_Father: {fileID: 5133337589519397662}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &3749668383044031067
 GameObject:
   m_ObjectHideFlags: 0
@@ -964,6 +997,37 @@ WheelCollider:
   m_LayerOverridePriority: 0
   m_Enabled: 0
   m_ProvidesContacts: 0
+--- !u!1 &4045538578166217062
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 6514206233570354045}
+  m_Layer: 0
+  m_Name: CockpitAnchor
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &6514206233570354045
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4045538578166217062}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -0.49454576, y: 1.0252222, z: 0.42435384}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 3198503425834986550}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &4500271321697362772
 GameObject:
   m_ObjectHideFlags: 0
@@ -1047,6 +1111,38 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!1 &4912237841133541756
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 7081235370316605551}
+  m_Layer: 0
+  m_Name: ThirdPersonAnchor
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &7081235370316605551
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4912237841133541756}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0.17718846, y: -0.000000022351736, z: 0.000000016880218, w: 0.98417693}
+  m_LocalPosition: {x: 0.12000048, y: 2.79, z: -4.2500033}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 5414652579567169824}
+  m_Father: {fileID: 3198503425834986550}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &5781410107618550117
 GameObject:
   m_ObjectHideFlags: 0
@@ -1185,6 +1281,7 @@ GameObject:
   - component: {fileID: 3672883856329609105}
   - component: {fileID: 9070127997331493709}
   - component: {fileID: 2646371033909299520}
+  - component: {fileID: 9184356878845117812}
   m_Layer: 8
   m_Name: Car 1
   m_TagString: Untagged
@@ -1212,7 +1309,7 @@ Transform:
   - {fileID: 3689393066690823467}
   - {fileID: 5683199962266814296}
   - {fileID: 962147925278537843}
-  - {fileID: 5414652579567169824}
+  - {fileID: 3198503425834986550}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0.154, y: -170.213, z: 0.149}
 --- !u!54 &5874336763327599101
@@ -1331,6 +1428,27 @@ MonoBehaviour:
   brakeVolume: 0.45
   stopSpeedKmh: 0.8
   hornKey: 104
+--- !u!114 &9184356878845117812
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5792132219090289696}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bab5c135bca5446479fb15d2049baa55, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  thirdPersonAnchor: {fileID: 7081235370316605551}
+  cockpitAnchor: {fileID: 6514206233570354045}
+  vehicleCamera: {fileID: 7307513882035108091}
+  cockpitLocalPosition: {x: -0.38, y: 1.08, z: 0.35}
+  cockpitLocalEuler: {x: 0, y: 0, z: 0}
+  thirdPersonFov: 60
+  cockpitFov: 72
+  thirdPersonNearClip: 0.3
+  cockpitNearClip: 0.08
 --- !u!1 &6560172808474961447
 GameObject:
   m_ObjectHideFlags: 0

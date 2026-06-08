@@ -10,7 +10,6 @@ public static class VehicleSwitchRegistry
     {
         "Car 1",
         "Police 1",
-        "Taxi_stylized",
         "Taxi"
     };
 
@@ -75,10 +74,12 @@ public static class VehicleSwitchRegistry
         for (int i = 0; i < controllers.Length; i++)
         {
             CarController car = controllers[i];
+            VehicleCameraRig rig = car != null ? VehicleCameraRig.EnsureOn(car.transform) : null;
             entries[i] = new VehicleCameraController.CameraEntry
             {
                 vehicleRoot = car != null ? car.transform : null,
-                vehicleCamera = car != null ? car.GetComponentInChildren<Camera>(true) : null
+                cameraRig = rig,
+                vehicleCamera = rig != null ? rig.VehicleCamera : null
             };
         }
 

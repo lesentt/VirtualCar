@@ -15,7 +15,7 @@ public static class VirtualVehicleEditor
     {
         ProjectRoot + "/Prefabs/Car 1.prefab",
         ProjectRoot + "/Prefabs/Police 1.prefab",
-        ProjectRoot + "/Prefabs/Taxi_stylized.prefab"
+        ProjectRoot + "/Prefabs/Taxi.prefab"
     };
 
     static VirtualVehicleEditor()
@@ -34,20 +34,14 @@ public static class VirtualVehicleEditor
     [MenuItem("Tools/Virtual Vehicle/Setup Taxi Prefab")]
     public static void SetupTaxiPrefab()
     {
-        const string path = ProjectRoot + "/Prefabs/Taxi_stylized.prefab";
-        GameObject prefabRoot = PrefabUtility.LoadPrefabContents(path);
-        if (prefabRoot == null)
+        if (!TaxiModelMigrator.BuildProjectTaxiPrefab())
         {
-            EditorUtility.DisplayDialog("Taxi 配置失败", "未找到 Taxi_stylized.prefab。", "确定");
+            EditorUtility.DisplayDialog("Taxi 配置失败", "未找到源 Taxi 模型或生成失败。", "确定");
             return;
         }
 
-        GameObjectUtility.RemoveMonoBehavioursWithMissingScript(prefabRoot);
-        DriveableVehicleBuilder.EnsureTaxi(prefabRoot);
-        PrefabUtility.SaveAsPrefabAsset(prefabRoot, path);
-        PrefabUtility.UnloadPrefabContents(prefabRoot);
         AssetDatabase.SaveAssets();
-        EditorUtility.DisplayDialog("完成", "Taxi 预制体已配置为可驾驶车辆。", "确定");
+        EditorUtility.DisplayDialog("完成", "Taxi.prefab 已配置为可驾驶车辆。", "确定");
     }
 
     [MenuItem("Tools/Virtual Vehicle/Setup Current Scene")]
@@ -70,10 +64,12 @@ public static class VirtualVehicleEditor
         int colliders = AddEnvironmentColliders();
         int prefabs = UpgradeVehiclePrefabs();
         int vehicles = SetupPlayerVehicles();
+        int taxiMigrated = TaxiModelMigrator.MigrateTaxiModelSilent();
         int placedTaxi = EnsureTaxiInScene();
         int env = CollisionSceneSetup.ConfigureEnvironment();
         CollisionSystemAssetSetup.CreateConfigAssetsSilent();
         int meshReadWrite = CollisionSystemAssetSetup.EnableVehicleMeshReadWriteSilent();
+        int cameraRigs = VehicleCameraRigSetup.BakeVehiclePrefabsSilent();
 
         EditorSceneManager.MarkSceneDirty(SceneManager.GetActiveScene());
 
@@ -85,8 +81,10 @@ public static class VirtualVehicleEditor
             $"升级车辆 Prefab：{prefabs}\n" +
             $"可驾驶车辆：{vehicles}\n" +
             $"场景出租车：{placedTaxi}\n" +
+            $"迁移 Taxi 模型：{(taxiMigrated >= 0 ? taxiMigrated : 0)}\n" +
             $"环境碰撞分类：{env}\n" +
-            $"启用 Mesh Read/Write：{meshReadWrite}",
+            $"启用 Mesh Read/Write：{meshReadWrite}\n" +
+            $"烘焙摄像机 Rig：{cameraRigs}",
             "确定");
     }
 
@@ -97,6 +95,7 @@ public static class VirtualVehicleEditor
         {
             GameObjectUtility.RemoveMonoBehavioursWithMissingScript(car.gameObject);
             VehicleDeformationSetup.SetupVehicle(car.gameObject);
+            VehicleCameraRigSetup.BakeHierarchy(car.transform, markSceneDirty: false);
             count++;
         }
 
@@ -107,12 +106,17 @@ public static class VirtualVehicleEditor
     {
         foreach (CarController car in Object.FindObjectsOfType<CarController>())
         {
-            if (car.gameObject.name.ToLowerInvariant().Contains("taxi_stylized"))
+            string lower = car.gameObject.name.ToLowerInvariant();
+            if (lower.Contains("taxi") && !lower.Contains("stylized"))
                 return 0;
         }
 
-        const string taxiPrefabPath = ProjectRoot + "/Prefabs/Taxi_stylized.prefab";
+        const string taxiPrefabPath = ProjectRoot + "/Prefabs/Taxi.prefab";
         GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>(taxiPrefabPath);
+        if (prefab == null && !TaxiModelMigrator.BuildProjectTaxiPrefab())
+            return 0;
+
+        prefab = AssetDatabase.LoadAssetAtPath<GameObject>(taxiPrefabPath);
         if (prefab == null)
             return 0;
 
@@ -133,6 +137,7 @@ public static class VirtualVehicleEditor
 
         instance.transform.position = spawnPosition;
         instance.transform.rotation = Quaternion.Euler(0f, -170f, 0f);
+        instance.name = "Taxi";
         DriveableVehicleBuilder.EnsureTaxi(instance);
         VehicleDeformationSetup.SetupVehicle(instance);
         Undo.RegisterCreatedObjectUndo(instance, "Add Taxi");
@@ -150,10 +155,17 @@ public static class VirtualVehicleEditor
                 continue;
 
             GameObjectUtility.RemoveMonoBehavioursWithMissingScript(prefabRoot);
-            if (path.EndsWith("Taxi_stylized.prefab"))
-                DriveableVehicleBuilder.EnsureTaxi(prefabRoot);
-            else
-                VehicleDeformationSetup.SetupVehicle(prefabRoot);
+            if (path.EndsWith("Taxi.prefab"))
+            {
+                PrefabUtility.UnloadPrefabContents(prefabRoot);
+                TaxiModelMigrator.BuildProjectTaxiPrefab();
+                count++;
+                continue;
+            }
+
+            VehicleDeformationSetup.SetupVehicle(prefabRoot);
+
+            VehicleCameraRigSetup.BakeHierarchy(prefabRoot.transform, markSceneDirty: false);
             PrefabUtility.SaveAsPrefabAsset(prefabRoot, path);
             PrefabUtility.UnloadPrefabContents(prefabRoot);
             count++;

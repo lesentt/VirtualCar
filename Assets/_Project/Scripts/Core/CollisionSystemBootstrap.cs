@@ -28,7 +28,11 @@ public static class CollisionSystemBootstrap
             return false;
 
         string lower = go.name.ToLowerInvariant();
-        return lower.Contains("taxi_stylized") || (lower.Contains("taxi") && go.GetComponent<CarController>() != null);
+        if (lower.Contains("stylized"))
+            return false;
+
+        CarController car = go.GetComponent<CarController>();
+        return car != null && lower.Contains("taxi");
     }
 
     static void EnsureDriveableVehicleRecursive(GameObject go)
