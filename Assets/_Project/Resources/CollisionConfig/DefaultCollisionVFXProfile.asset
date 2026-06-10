@@ -13,8 +13,8 @@ MonoBehaviour:
   m_Name: DefaultCollisionVFXProfile
   m_EditorClassIdentifier: 
   smokePrefab: {fileID: 4380918445339287248, guid: 4b38b1b3e38ed7e499c047067beb6122, type: 3}
-  firePrefab: {fileID: 1582275357731197809, guid: 5334360cd0cfad84bbf6855beaf10de4, type: 3}
-  bigFirePrefab: {fileID: 2670923554171423535, guid: 56f02590ce7db2347803864c84dd78d3, type: 3}
+  firePrefab: {fileID: 2670923554171423535, guid: 56f02590ce7db2347803864c84dd78d3, type: 3}
+  bigFirePrefab: {fileID: 1582275357731197809, guid: 5334360cd0cfad84bbf6855beaf10de4, type: 3}
   minImpulseForVFX: 300
   minImpulseForFire: 4000
   minImpulseForImpactBigFire: 10000
